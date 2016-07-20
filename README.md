@@ -28,3 +28,6 @@ It's easy enough to install the updated RStudio from the terminal. For the previ
 
 ###Shiny
 There are a few dependencies that must be installed for the app to run. The script `install_and_source_dependencies.R` will install and source any dependencies that have not currently been installed or loaded into the environment.
+
+#Running the App
+
