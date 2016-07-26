@@ -12,18 +12,29 @@ micImport <- function(sensor_data_path){
   return(results)
 }
 dataImport <- function(sensor_data_path){
-  p <- readLines(sensor_data_path)
-  header_indicator <- which(grepl("Data Format", p)) + 1
-  headerNames <- gsub("\t", replacement = "", p[header_indicator])
-  headerNames <- gsub("0", replacement = "", headerNames)
-  end_meta <- which(grepl("!@#", p))
-  data <-data.frame(do.call('rbind', strsplit(p[(end_meta + 1) : length(p)], split = ",", fixed = TRUE)), stringsAsFactors = FALSE)
-  colnames(data) <- unlist(strsplit(headerNames, split = ","))
-  data <- lapply(data, function(x) as.numeric(x))
+  data <- read.csv(sensor_data_path, stringsAsFactors = FALSE, header = TRUE)
+#   #p <- readLines(sensor_data_path)
+#   fileName <- sensor_data_path
+#   temp <- readChar(fileName, file.info(fileName)$size)
+#   sections <- strsplit(temp, split = "!@#/n")
+#   
+#   end_meta <- which(grepl("!@#", p))
+#   if (length(end_meta) > 1) {
+#     end_meta <- end_meta[2]
+#   }
+#     
+#   header_indicator <- end_meta + 1
+#   headerNames <- gsub("\t", replacement = "", p[header_indicator])
+#   headerNames <- gsub("0", replacement = "", headerNames)
+#   headerNames <- gsub("_", replacement = "", headerNames)
+#   headerNames <- gsub(" ", replacement = "", headerNames)
+#   data <- data.frame(do.call('rbind', strsplit(p[(end_meta + 1) : length(p)], split = ",", fixed = TRUE)), stringsAsFactors = FALSE)
+#   colnames(data) <- unlist(strsplit(headerNames, split = ","))
+#   data <- data.frame(lapply(data, function(x) as.numeric(x)))
   return(data)
 }
 
-aggregateData <- function(data_path = "data-raw/simulated_tests/raw/four_leg_walk/"){
+aggregateData <- function(data_path = "data/2016_7_11_19_0_16/"){
   sensor_file_names <-c(list.files(list.dirs(data_path), pattern = c("*.csv"), full.names =  TRUE),
                         list.files(list.dirs(data_path), pattern = c("*.wav"), full.names =  TRUE))%>%
     data.frame(file_path = ., stringsAsFactors = FALSE) %>%
@@ -38,6 +49,9 @@ aggregateData <- function(data_path = "data-raw/simulated_tests/raw/four_leg_wal
   data_read <- apply(sensor_file_names, 1, function(x){
     if (x[["sensor_type"]] == "Microphone") {
       return(try(micImport(x[["file_path"]])))
+    }
+    if (x[["sensor_type"]] == "Undecided") {
+      return(try(warning("Unrecognized file formating. Sensor data not imported")))
     }
     else {dataImport(x[["file_path"]])}
   })

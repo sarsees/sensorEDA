@@ -19,28 +19,28 @@ shinyServer(function(input, output, session) {
   shinyDirChoose(input,'file', session=session,roots=c(wd='.'))
   datasetInput <- reactive({
     if (is.null(input$file))
-      return(aggregateData(data_path = "./COW007/2016_07_11_22_27_40/"))
+      return(aggregateData(data_path = "./data/2016_7_11_19_0_16/"))
     return(aggregateData(parseDirPath(roots=c(wd='.'), input$file)))
   })
   output$slider <- renderUI({
     sliderInput("timeSlider",  
                 label = h4("Time"),
-                min=min(datasetInput()[["IMU1"]]$Time_Sec), max=max(datasetInput()[["IMU1"]]$Time_Sec), 
-                value=c(min(datasetInput()[["IMU1"]]$Time_Sec), max(datasetInput()[["IMU1"]]$Time_Sec)))
+                min=min(datasetInput()[["IMU1"]]$time), max=max(datasetInput()[["IMU1"]]$time), 
+                value=c(min(datasetInput()[["IMU1"]]$time), max(datasetInput()[["IMU1"]]$time)))
   })
   data <- reactive({
     filteredData <- datasetInput()
     if(!is.null(input$timeSlider) & !is.null(input$sensor)){
-      filteredData <- filteredData[[input$sensor]] %>%
-        filter(Time_Sec >= input$timeSlider[1] ,
-               Time_Sec <= input$timeSlider[2] )
+      filteredData <- filteredData[[as.character(input$sensor)]] %>%
+        filter(time >= input$timeSlider[1] ,
+               time <= input$timeSlider[2] )
     }
     filteredData
   })
   
   output$plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    plot_data <- melt(data(), id.vars = "Time_Sec")
+    plot_data <- melt(data(), id.vars = "time")
 
     # draw the plot
     if (input$facet == "On"){
@@ -50,7 +50,7 @@ shinyServer(function(input, output, session) {
         return(p)
       }else{
         if (input$free_bird == "On"){
-          p <- ggplot(plot_data, aes(x = Time_Sec, y = value, color = variable, group = variable))+
+          p <- ggplot(plot_data, aes(x = time, y = value, color = variable, group = variable))+
             geom_line()+
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
@@ -58,7 +58,7 @@ shinyServer(function(input, output, session) {
           return(p)
         }
         if (input$free_bird == "Off"){
-          p <- ggplot(plot_data, aes(x = Time_Sec, y = value, color = variable, group = variable))+
+          p <- ggplot(plot_data, aes(x = time, y = value, color = variable, group = variable))+
             geom_line()+
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
@@ -74,7 +74,7 @@ shinyServer(function(input, output, session) {
         p <- tuneR::plot(data())
         return(p)
       }else{
-          p <- ggplot(plot_data, aes(x = Time_Sec, y = value, color = variable, group = variable))+
+          p <- ggplot(plot_data, aes(x = time, y = value, color = variable, group = variable))+
             geom_line()+
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))
