@@ -8,7 +8,7 @@ require(tuneR)
 micImport <- function(sensor_data_path){
   audioWave <- readWave(sensor_data_path)
   time_span <- length(audioWave@left)/audioWave@samp.rate
-  results <- data.frame(Left = audioWave@left, Right = audioWave@right, Time_Since_Start = seq(from = 0,  to = time_span, along.with = audioWave@left))
+  results <- data.frame(Left = audioWave@left, Right = audioWave@right, time = seq(from = 0,  to = time_span, along.with = audioWave@left))
   return(results)
 }
 dataImport <- function(sensor_data_path){
