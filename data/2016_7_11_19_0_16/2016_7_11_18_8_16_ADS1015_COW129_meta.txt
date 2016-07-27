@@ -1,0 +1,19 @@
+Original Header:
+
+Sensor Name: ADS1015
+Cow ID: 129
+I2CAddress: 0x48
+Sampling frequency: 25 Hz
+Data Format: 
+	V_a0, V_b0, V_c0, t0
+	V_a1, V_b1, V_c1, t1
+	...
+	...
+	...
+	V_an, V_bn, V_cn, tn
+	Where V_a is the voltage on channel 3 of the ADC in signed short format. (16-bit) This voltage represents the voltage coming off of the GSR sensor. V_b is the votlage coming off of the first ECG on channel 2. It is also in signed short format. V_c is the voltage coming off of the second ECG on channel 1. Cannel 0 is unused. t is the time that the data point was taken in seconds, from the epoch. It is a double precision float. (64-bit) Each data point consists of these 3 voltages and a timestamp, sequentially written to file. !@#
+
+CSV Header:
+All the values are now in Volt units.
+The time is in seconds, subtracting off the startTime.
+!@#

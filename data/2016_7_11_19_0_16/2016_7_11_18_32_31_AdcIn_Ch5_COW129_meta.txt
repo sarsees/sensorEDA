@@ -1,0 +1,12 @@
+Original Header:
+
+Name: AdcIn_Ch5
+This is using channel 5 on the onboard ADC.
+The first value is a voltage in mV, and the second value is a time in seconds from epoch.
+!@#
+
+CSV Header:
+
+The voltages are now in volts.
+The time is in seconds, subtracting off the startTime.
+!@#

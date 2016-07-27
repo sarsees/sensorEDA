@@ -1,0 +1,19 @@
+Original Header:
+
+Sensor Name: MCP9808_N2
+Cow ID: 129
+I2CAddress: 0x19
+Sampling frequency: 1 Hz
+Data Format: 
+	T_0, t0
+	T_1, t1
+	...
+	...
+	...
+	T_n, tn
+	Where T is the temperature in single precision float format (32-bit). t is the time that the data point was taken in seconds, from the epoch. It is a double precision float. (64-bit) Each data point consists of a temperature and a timestamp, sequentially written to file. !@#
+
+CSV Header:
+
+The time is in seconds, subtracting off the startTime.
+!@#
