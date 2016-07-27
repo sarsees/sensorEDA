@@ -6,7 +6,10 @@
 #
 
 library(shiny)
-
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(shinyFiles)
 shinyUI(fluidPage(
 
   # Application title
@@ -28,16 +31,6 @@ shinyUI(fluidPage(
 #                 accept=c('text/csv', 
 #                          'text/comma-separated-values,text/plain', 
 #                          '.csv')),
-      radioButtons("sensor",
-                         label = h3("Display Sensor"),
-                         choices = list("IMU 1" = "IMU1",
-                                        "IMU 2" = "IMU2",
-                                        "GSR" = "GSR",
-                                        "Pulse Ox" = "PulseOx",
-                                        "Temperature 1" = "Temp1",
-                                        "Temperature 2" = "Temp2",
-                                        "Microphone" = "Microphone"),
-                         selected = "IMU1"),
       radioButtons("facet",
                    label = h3("Facet On"),
                    choices = list("On" = "On",
@@ -56,7 +49,16 @@ shinyUI(fluidPage(
       #string that Shiny will use as the name of your reactive element. Your 
       #users will not see this name. Then buid the object in server.R by 
       #output$text1 in server.R matches textOutput("text1") in ui.R 
-      plotOutput("plot", width = "900px", height = "800px")
+      #plotOutput("plot", width = "900px", height = "800px")
+      tabsetPanel(id = "tabs", 
+                  tabPanel("IMU1", value = "IMU1", plotOutput("imu1_plot", height = 600)),
+                  tabPanel("IMU2", value = "IMU2", plotOutput("imu2_plot")),
+                  tabPanel("PulseOx", value = "PulseOx", plotOutput("pox_plot")),
+                  tabPanel("GSR", value = "GSR", plotOutput("gsr_plot")),
+                  tabPanel("Temp1", value = "Temp1", plotOutput("temp1_plot")),
+                  tabPanel("Temp2", value = "Temp2", plotOutput("temp2_plot")),
+                  tabPanel("Microphone", value = "Microphone", plotOutput("mic_plot"))
+                  )
     )
   )
 ))
