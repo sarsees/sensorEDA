@@ -4,6 +4,8 @@ require(reshape2)
 require(shinyFiles)
 require(stringr)
 require(tuneR)
+require(lubridate)
+options(digits.secs=6)
 
 micImport <- function(sensor_data_path){
   audioWave <- readWave(sensor_data_path)
@@ -12,7 +14,9 @@ micImport <- function(sensor_data_path){
   return(results)
 }
 dataImport <- function(sensor_data_path){
-  data <- read.csv(sensor_data_path, stringsAsFactors = FALSE, header = TRUE)
+  data <- read.csv(sensor_data_path, stringsAsFactors = FALSE, header = TRUE,colClasses=c(time = "character"))
+  data$time <- as.POSIXct(as.numeric(data$time), origin = "1970-01-01")
+  #data$time <- fast_strptime(as.character(data$time), "%Y-%m-%d %H:%M:%OS")
 #   #p <- readLines(sensor_data_path)
 #   fileName <- sensor_data_path
 #   temp <- readChar(fileName, file.info(fileName)$size)
