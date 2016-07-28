@@ -28,7 +28,7 @@ UsePackage <- function(package, defaultCRANmirror = "http://cran.at.r-project.or
   return(TRUE)
 }
 
-libraries <-  c("ggplot2", "shiny", "dplyr", "tuneR", "reshape2", "shinyFiles", "stringr")
+libraries <-  c("ggplot2", "shiny", "dplyr", "tuneR", "reshape2", "shinyFiles", "stringr", "lubridate")
 for(library in libraries) 
 { 
   if(!UsePackage(library))
