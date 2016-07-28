@@ -33,7 +33,7 @@ shinyServer(function(input, output, session) {
     sliderInput("timeSlider",  
                 label = h4("Time"),
                 min=min(datasetInput()[[input$tabs]]$time), max=max(datasetInput()[[input$tabs]]$time), 
-                value=c(min(datasetInput()[[input$tabs]]$time), max(datasetInput()[[input$tabs]]$time)/10))
+                value=c(min(datasetInput()[[input$tabs]]$time), max(datasetInput()[[input$tabs]]$time)), round = TRUE)
   })
   data <- reactive({
     filteredData <- datasetInput()
@@ -48,6 +48,8 @@ shinyServer(function(input, output, session) {
   
   output$imu1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
+    if (is.null(data())){
+      return(NULL)}
     plot_data <- data()
 
     # draw the plot
