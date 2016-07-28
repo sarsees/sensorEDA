@@ -40,7 +40,14 @@ shinyUI(fluidPage(
                   label = h3("Free Y Scale"),
                   choices = list("On" = "On",
                             "Off" = "Off"),
-                  selected = "On")
+                  selected = "On"),
+      radioButtons("resample_perct",
+                  label = h3("Resample Percentage"),
+                  choices = list("1%" = 0.010,
+                                 "25%" = 0.25,
+                                 "50%" = 0.50,
+                                 "None" = 1.0),
+                  selected = 0.010)
     ),
 
     # Show a plot of the generated distribution
@@ -52,12 +59,12 @@ shinyUI(fluidPage(
       #plotOutput("plot", width = "900px", height = "800px")
       tabsetPanel(id = "tabs", 
                   tabPanel("IMU1", value = "IMU1", plotOutput("imu1_plot", height = 600)),
-                  tabPanel("IMU2", value = "IMU2", plotOutput("imu2_plot")),
-                  tabPanel("PulseOx", value = "PulseOx", plotOutput("pox_plot")),
-                  tabPanel("GSR", value = "GSR", plotOutput("gsr_plot")),
-                  tabPanel("Temp1", value = "Temp1", plotOutput("temp1_plot")),
-                  tabPanel("Temp2", value = "Temp2", plotOutput("temp2_plot")),
-                  tabPanel("Microphone", value = "Microphone", plotOutput("mic_plot"))
+                  tabPanel("IMU2", value = "IMU2", plotOutput("imu2_plot", height = 600)),
+                  tabPanel("PulseOx", value = "PulseOx", plotOutput("pox_plot", height = 600)),
+                  tabPanel("GSR", value = "GSR", plotOutput("gsr_plot", height = 600)),
+                  tabPanel("Temp1", value = "Temp1", plotOutput("temp1_plot", height = 600)),
+                  tabPanel("Temp2", value = "Temp2", plotOutput("temp2_plot", height = 600)),
+                  tabPanel("Microphone", value = "Microphone", plotOutput("mic_plot", height = 600))
                   )
     )
   )

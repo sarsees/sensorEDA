@@ -18,9 +18,16 @@ shinyServer(function(input, output, session) {
 
   shinyDirChoose(input,'file', session=session,roots=c(wd='.'))
   datasetInput <- reactive({
-    if (is.null(input$file))
-      return(aggregateData(data_path = "./data/2016_7_11_19_0_16/"))
-    return(aggregateData(parseDirPath(roots=c(wd='.'), input$file)))
+    if (is.null(input$file)){
+      unmelted_data <- aggregateData(data_path = "./data/2016_7_11_19_0_16/")
+      melted_data <- lapply(unmelted_data, function(x) melt(x, id.vars = "time"))
+      return(melted_data)
+    }
+    if (!is.null(input$file)){
+      unmelted_data <- aggregateData(parseDirPath(roots=c(wd='.'), input$file))
+      melted_data <- lapply(unmelted_data, function(x) melt(x, id.vars = "time"))
+      return(melted_data)
+    }
   })
   output$slider <- renderUI({
     sliderInput("timeSlider",  
@@ -33,14 +40,15 @@ shinyServer(function(input, output, session) {
     if(!is.null(input$timeSlider)){
       filteredData <- filteredData[[input$tabs]] %>%
         filter(time >= input$timeSlider[1] ,
-               time <= input$timeSlider[2] )
+               time <= input$timeSlider[2] ) %>%
+        sample_frac(as.numeric(input$resample_perct), replace = FALSE)
     }
     filteredData
   })
   
   output$imu1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    plot_data <- melt(data(), id.vars = "time")
+    plot_data <- data()
 
     # draw the plot
     if (input$facet == "On"){
@@ -74,7 +82,7 @@ shinyServer(function(input, output, session) {
   })
   output$imu2_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    plot_data <- melt(data(), id.vars = "time")
+    plot_data <- data()
     
     # draw the plot
     if (input$facet == "On"){
@@ -108,7 +116,7 @@ shinyServer(function(input, output, session) {
   })
   output$pox_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    plot_data <- melt(data(), id.vars = "time")
+    plot_data <- data()
     
     # draw the plot
     if (input$facet == "On"){
@@ -142,7 +150,7 @@ shinyServer(function(input, output, session) {
   })
   output$gsr_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    plot_data <- melt(data(), id.vars = "time")
+    plot_data <- data()
     
     # draw the plot
     if (input$facet == "On"){
@@ -176,7 +184,7 @@ shinyServer(function(input, output, session) {
   })
   output$temp1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    plot_data <- melt(data(), id.vars = "time")
+    plot_data <- data()
     
     # draw the plot
     if (input$facet == "On"){
@@ -210,7 +218,7 @@ shinyServer(function(input, output, session) {
   })
   output$temp2_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    plot_data <- melt(data(), id.vars = "time")
+    plot_data <- data()
     
     # draw the plot
     if (input$facet == "On"){
@@ -244,7 +252,7 @@ shinyServer(function(input, output, session) {
   })
   output$mic_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    plot_data <- melt(data(), id.vars = "time")
+    plot_data <- data()
     
     # draw the plot
     if (input$facet == "On"){
