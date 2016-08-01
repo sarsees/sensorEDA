@@ -10,8 +10,12 @@ library(dplyr)
 library(ggplot2)
 library(reshape2)
 library(shinyFiles)
-shinyUI(fluidPage(
 
+shinyUI(fluidPage(
+#   tags$style(type="text/css",
+#              ".shiny-output-warning { visibility: hidden; }",
+#              ".shiny-output-warning:before { visibility: hidden; }"
+#   ),
   # Application title
   titlePanel(title = div(
              img(src = "yj_image.jpg", height = 80, width = 80),
@@ -39,7 +43,8 @@ shinyUI(fluidPage(
                   selected = "On"),
       radioButtons("resample_perct",
                   label = h4("Resample Percentage"),
-                  choices = list("1%" = 0.010,
+                  choices = list("0.5%" = 0.005,
+                                 "1%" = 0.010,
                                  "25%" = 0.25,
                                  "50%" = 0.50,
                                  "None" = 1.0),
