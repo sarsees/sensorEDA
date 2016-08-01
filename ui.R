@@ -12,10 +12,10 @@ library(reshape2)
 library(shinyFiles)
 
 shinyUI(fluidPage(
-#   tags$style(type="text/css",
-#              ".shiny-output-warning { visibility: hidden; }",
-#              ".shiny-output-warning:before { visibility: hidden; }"
-#   ),
+  tags$style(type="text/css",
+             ".shiny-output-warning { visibility: hidden; }",
+             ".shiny-output-warning:before { visibility: hidden; }"
+  ),
   # Application title
   titlePanel(title = div(
              img(src = "yj_image.jpg", height = 80, width = 80),
