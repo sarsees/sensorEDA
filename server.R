@@ -24,8 +24,24 @@ shinyServer(function(input, output, session) {
       return(NULL)
     }
     if (!is.null(input$file)){
+      #Full folder path
+      data_folder_path = paste(parseDirPath(roots=c(wd=getwd()),input$file))
+      
+      #Run CSV Converter
+      csv_command <- paste("python ", getwd(),'/utilities/unpack_driver.py ',data_folder_path,sep="")
+      system(csv_command)
+      
+      #Process data
       unmelted_data <- aggregateData(parseDirPath(roots=c(wd='.'), input$file))
       melted_data <- lapply(unmelted_data, function(x) melt(x, id.vars = "time"))
+      
+      #Remove all csv and txt files
+      rm_csv_command <- paste("rm ",data_folder_path,"/*.csv",sep="")
+      rm_txt_command <- paste("rm ",data_folder_path,"/*.txt",sep="")
+      system(rm_txt_command)
+      system(rm_csv_command)
+      
+      #Return unmelted
       return(melted_data)
     }
   })

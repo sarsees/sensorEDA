@@ -3,6 +3,7 @@ from glob import glob
 from os import getcwd as pwd
 import os
 import subprocess
+import sys
 
 def process(path, ext):
 	#Look in the current path
@@ -32,10 +33,12 @@ def getSensorType(path):
 pwd = subprocess.check_output('pwd')[0:-1]
 cwd =  os.path.dirname(os.path.realpath(__file__))
 os.chdir(cwd)
-    
+
 #Get the file directory
-path = '../output/working/'#'/mnt/sd/sarah/'#'/mnt/sd/yellowjacket/output/working'#'/media/yellowjacket/LORENZO/shiny/sensorEDA/data/2016_7_11_19_0_16' #../output/working/'
-path = '/mnt/sd/sarah/test1_2_alej/'
+try:
+	path = sys.argv[1]
+except:
+	path = '../data/ADC_test/'
 
 #Process the files in that directory
 process(path,'.bin')
