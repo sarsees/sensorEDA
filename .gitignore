@@ -1,4 +1,3 @@
 .Rhistory
 .Rdata
-data/*
-data/*/*
+data/**
