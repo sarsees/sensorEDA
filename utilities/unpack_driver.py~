@@ -1,0 +1,44 @@
+from unpackBins import unpackBins
+from glob import glob
+from os import getcwd as pwd
+import os
+import subprocess
+
+def process(path, ext):
+	#Look in the current path
+	cwd = glob(path + '/*')
+
+	#Iterate through all the elements in the path
+	for i in cwd:
+		#If an element has the same extention as desired, execute code
+		if i[-(len(ext)):] == ext:
+			#Run code on element
+			sensor_type = getSensorType(i)
+			temp = unpackBins(sensor_type,i)
+
+		#Recursively continue
+		process(i,ext)
+
+def getSensorType(path):
+	#Split by slashes
+	directories = path.split('/')
+	filename = directories[-1]
+	file_breakdown = filename.split('_')
+	print(file_breakdown[6])
+	return file_breakdown[6]
+
+
+#Save the old directory and change directories
+pwd = subprocess.check_output('pwd')[0:-1]
+cwd =  os.path.dirname(os.path.realpath(__file__))
+os.chdir(cwd)
+    
+#Get the file directory
+path = '../output/working/'#'/mnt/sd/sarah/'#'/mnt/sd/yellowjacket/output/working'#'/media/yellowjacket/LORENZO/shiny/sensorEDA/data/2016_7_11_19_0_16' #../output/working/'
+#path = '/mnt/sd/sarah/test2_2_dan/'
+
+#Process the files in that directory
+process(path,'.bin')
+
+#Change back to previous directory
+os.chdir(pwd)
