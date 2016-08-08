@@ -35,6 +35,8 @@ shinyServer(function(input, output, session) {
       unmelted_data <- aggregateData(parseDirPath(roots=c(wd='.'), input$file))
       melted_data <- lapply(unmelted_data, function(x) melt(x, id.vars = "time"))
       
+      #saveRDS(melted_data,"/media/yellowjacket/LORENZO/shiny/sensorEDA/utilities/Matlab Legacy Code/data.rds")
+      
       #Remove all csv and txt files
       rm_csv_command <- paste("rm ",data_folder_path,"/*.csv",sep="")
       rm_txt_command <- paste("rm ",data_folder_path,"/*.txt",sep="")
