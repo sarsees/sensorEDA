@@ -146,8 +146,10 @@ shinyServer(function(input, output, session) {
 
     #Get the spo2 values
     source("utilities/getSpo2.R")
-    #spo2_data = getSpo2(pox_data)
-    #print(spo2_data)
+    spo2_data = getSpo2(pox_data)
+    print(spo2_data)
+    
+    plot(time,spo2_data$spo2)
     
     # draw the plot
     if (input$facet == "On"){

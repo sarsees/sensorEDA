@@ -13,8 +13,8 @@ getSpo2 <- function(data){
   l_total = floor(length(data$variable)/3)
   ir_total = data$value[1:l_total]
   #TODO: Read in time correctly
-  t_total = data$time[1:l_total]
-  t_total = seq((1/l_total)*60,60,length=l_total)
+  t_total = as.numeric(seconds(data$time[1:l_total]))
+  #t_total = seq((1/l_total)*60,60,length=l_total)
   red_total = data$value[(l_total+1):(2*l_total)]
   temp_total = data$value[(1+2*l_total):(3*l_total)]
   
@@ -53,14 +53,11 @@ getSpo2 <- function(data){
   spo2_final = seq(0,0,length=number_of_spo2_points)
   spo2_2_final = seq(0,0,length=number_of_spo2_points)
   spo2_cap_final = seq(0,0,length=number_of_spo2_points)
+  HR_final = seq(0,0,length=number_of_spo2_points)
   for(window in seq(1,number_of_spo2_points)){
     #Get the current window's values
     ind1 = 1 + (window-1)*(window_width-window_overlap)
     ind2 = ind1 + window_width
-    print(ind1)
-    print(ind2)
-    print(l_total)
-    print('-----------------')
     t_current = t_total[ind1:ind2]
     ir = ir_total[ind1:ind2]
     red = red_total[ind1:ind2]
@@ -112,13 +109,14 @@ getSpo2 <- function(data){
     spo2_2 = 110-25*R
     
     #Save windowing values
-    t_final[window] = t_current[length(t_current)]
+    t_final[window] = as.POSIXct(t_current[length(t_current)], origin = "1970-01-01")
     spo2_final[window] = spo2
     spo2_2_final[window] = spo2_2
     spo2_cap_final[window] = spo2_cap
+    HR_final[window] = HR
   }
   
-  final = data.frame(cbind(t(t(spo2_final)),t(t(spo2_2_final)),t(t(spo2_cap_final)),t(t(t_final))))
-  colnames(final) <- c("spo2", "spo2_2", "spo2_cap", "time")
+  final = data.frame(cbind(t(t(spo2_final)),t(t(spo2_2_final)),t(t(spo2_cap_final)),t(t(HR_final)),t(t(t_final))))
+  colnames(final) <- c("spo2", "spo2_2", "spo2_cap", "HR", "time")
   return(final)
 }
