@@ -141,6 +141,13 @@ shinyServer(function(input, output, session) {
     if(is.null(datasetInput()))
       (return(NULL))
     if (!is.null(datasetInput()))
+    #Get the spo2 values
+    print('printed ()')
+    source("utilities/getSpo2.R")
+    print('printed2 ()')
+    print(getSpo2(data()))
+    print('printed3 ()')
+    
     # draw the plot
     if (input$facet == "On"){
       ############# work on microphone data ################
