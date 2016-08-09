@@ -141,18 +141,19 @@ shinyServer(function(input, output, session) {
     if(is.null(datasetInput()))
       (return(NULL))
     if (!is.null(datasetInput()))
+    #Save the data into a variable
+    pox_data = data()
+
     #Get the spo2 values
-    print('printed ()')
     source("utilities/getSpo2.R")
-    print('printed2 ()')
-    print(getSpo2(data()))
-    print('printed3 ()')
-    
+    spo2_data = getSpo2(pox_data)
+    print(spo2_data)
+
     # draw the plot
     if (input$facet == "On"){
       ############# work on microphone data ################
       if (input$free_bird == "On"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(pox_data, aes(x = time, y = value, color = variable, group = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+

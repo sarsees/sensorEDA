@@ -12,18 +12,11 @@ getSpo2 <- function(data){
   #Inputs
   l_total = floor(length(data$variable)/3)
   ir_total = data$value[1:l_total]
+  #TODO: Read in time correctly
   t_total = data$time[1:l_total]
   t_total = seq((1/l_total)*60,60,length=l_total)
   red_total = data$value[(l_total+1):(2*l_total)]
   temp_total = data$value[(1+2*l_total):(3*l_total)]
-  label = 'wat'
-  
-  print(length(data))
-  print(l_total)
-  print(ir_total)
-  print(sapply(data,levels))
-  
-  
   
   #Calculate windowing values
   window_tspan = 5 # in seconds
@@ -31,6 +24,13 @@ getSpo2 <- function(data){
   window_width = floor(window_tspan/(t_total[2]-t_total[1]))
   window_overlap = floor(window_width*window_overlap_ratio)
   number_of_spo2_points = 1 + floor((length(t_total)-window_width)/window_overlap)
+  
+  #Check to make sure that the window width is fine
+  #Make sure that there are a decent number of windows and that the windows aren't too small
+  if (((5*window_width)>l_total)|(window_width < 5)){
+    print('WARNING: Not enough data to calculate SPO2 Values.')
+    return(NULL)
+  }
   
   #Peak detection constants
   peak_distance = 20
