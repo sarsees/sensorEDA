@@ -6,8 +6,8 @@ require(pracma)
 
 getSpo2 <- function(data){
   #Get the data
-  #data <- readRDS("/media/yellowjacket/LORENZO/shiny/sensorEDA/utilities/Matlab Legacy Code/data.rds")
-  #data <- data$PulseOx
+  data <- readRDS("/media/yellowjacket/LORENZO/shiny/sensorEDA/utilities/Matlab Legacy Code/data.rds")
+  data <- data$PulseOx
   
   #Inputs
   l_total = floor(length(data$variable)/3)
@@ -23,7 +23,7 @@ getSpo2 <- function(data){
   window_overlap_ratio = .5 # .5 = 50%
   window_width = floor(window_tspan/(t_total[2]-t_total[1]))
   window_overlap = floor(window_width*window_overlap_ratio)
-  number_of_spo2_points = 1 + floor((length(t_total)-window_width)/window_overlap)
+  number_of_spo2_points = floor((length(t_total)-window_width)/(window_width-window_overlap))
   
   #Check to make sure that the window width is fine
   #Make sure that there are a decent number of windows and that the windows aren't too small
@@ -57,6 +57,10 @@ getSpo2 <- function(data){
     #Get the current window's values
     ind1 = 1 + (window-1)*(window_width-window_overlap)
     ind2 = ind1 + window_width
+    print(ind1)
+    print(ind2)
+    print(l_total)
+    print('-----------------')
     t_current = t_total[ind1:ind2]
     ir = ir_total[ind1:ind2]
     red = red_total[ind1:ind2]

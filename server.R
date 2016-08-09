@@ -146,9 +146,9 @@ shinyServer(function(input, output, session) {
 
     #Get the spo2 values
     source("utilities/getSpo2.R")
-    spo2_data = getSpo2(pox_data)
-    print(spo2_data)
-
+    #spo2_data = getSpo2(pox_data)
+    #print(spo2_data)
+    
     # draw the plot
     if (input$facet == "On"){
       ############# work on microphone data ################
