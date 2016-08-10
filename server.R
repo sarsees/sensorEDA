@@ -15,6 +15,7 @@ shinyServer(function(input, output, session) {
   # will be saved under the names given to the widget in ui.R
   source("data_cleaning.R")
   source("ggplot_custom_theme.R")
+  source("multiplot.R")
 
   shinyDirChoose(input,'file', session=session,roots=c(wd='.'))
   datasetInput <- reactive({
@@ -33,7 +34,11 @@ shinyServer(function(input, output, session) {
       
       #Process data
       unmelted_data <- aggregateData(parseDirPath(roots=c(wd='.'), input$file))
-      melted_data <- lapply(unmelted_data, function(x) melt(x, id.vars = "time"))
+      melted_data <- lapply(unmelted_data, function(x){
+        
+       melt(x, id.vars = "time")
+
+        })
       
       #saveRDS(melted_data,"/media/yellowjacket/LORENZO/shiny/sensorEDA/utilities/Matlab Legacy Code/data.rds")
       
@@ -61,8 +66,12 @@ shinyServer(function(input, output, session) {
 #       return(NULL)
       filteredData <- datasetInput()[[input$tabs]] %>%
         filter(time >= input$timeSlider[1] ,
-               time <= input$timeSlider[2] ) %>%
-        sample_frac(as.numeric(input$resample_perct), replace = FALSE)
+               time <= input$timeSlider[2] )
+      if (input$resample_perct > 0 ) {
+        filteredData <- filteredData %>%
+          sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+      }
+        
     filteredData
   })
   
@@ -142,12 +151,13 @@ shinyServer(function(input, output, session) {
       (return(NULL))
     if (!is.null(datasetInput()))
     #Save the data into a variable
-    pox_data = data()
+    pox_data = data() %>%
+        group_by(variable) %>%
+        arrange(time)
 
     #Get the spo2 values
     source("utilities/getSpo2.R")
     spo2_data = getSpo2(pox_data)
-    print(spo2_data)
     
     # draw the plot
     if (input$facet == "On"){
@@ -158,26 +168,57 @@ shinyServer(function(input, output, session) {
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
           facet_wrap(~variable, scales = "free_y")
-        return(p)
+        if(!is.null(spo2_data)){
+          melted_spo2_data <- melt(spo2_data, id.vars = "time")
+          q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
+            geom_line()+
+            theme_custom()+
+            theme(axis.text.x = element_text(angle = 90))+
+            facet_wrap(~variable, scales = "free_y")
+        }
+        if(is.null(spo2_data)){
+          q <- NULL
+        }
       }
       if (input$free_bird == "Off"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(pox_data, aes(x = time, y = value, color = variable, group = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
           facet_wrap(~variable)
-        return(p)
+        if(!is.null(spo2_data)){
+          melted_spo2_data <- melt(spo2_data, id.vars = "time")
+          q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
+            geom_line()+
+            theme_custom()+
+            theme(axis.text.x = element_text(angle = 90))+
+            facet_wrap(~variable)
+        }
+        if(is.null(spo2_data)){
+          q <- NULL
+        }
       }
     }
     # draw the plot
     if (input$facet == "Off"){
       ############# work on microphone data ################
-      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+      p <- ggplot(pox_data, aes(x = time, y = value, color = variable, group = variable))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))
-      return(p)
+      if(!is.null(spo2_data)){
+        melted_spo2_data <- melt(spo2_data, id.vars = "time")
+        q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
+          geom_line()+
+          theme_custom()+
+          theme(axis.text.x = element_text(angle = 90))
+      }
+      if(is.null(spo2_data)){
+        q <- NULL
+      }
     }
+    
+    return(multiplot(p,q))
   })
   output$gsr_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
@@ -213,6 +254,7 @@ shinyServer(function(input, output, session) {
         theme(axis.text.x = element_text(angle = 90))
       return(p)
     }
+    
   })
   output$temp1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
