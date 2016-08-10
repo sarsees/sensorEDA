@@ -16,6 +16,7 @@ shinyServer(function(input, output, session) {
   source("data_cleaning.R")
   source("ggplot_custom_theme.R")
   source("multiplot.R")
+  source("utilities/getSpo2.R")
 
   shinyDirChoose(input,'file', session=session,roots=c(wd='.'))
   datasetInput <- reactive({
@@ -156,7 +157,7 @@ shinyServer(function(input, output, session) {
         arrange(time)
 
     #Get the spo2 values
-    source("utilities/getSpo2.R")
+    
     spo2_data = getSpo2(pox_data)
     
     # draw the plot
