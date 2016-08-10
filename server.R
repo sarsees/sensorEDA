@@ -60,11 +60,11 @@ shinyServer(function(input, output, session) {
 #     if (is.null(datasetInput()))
 #       return(NULL)
       filteredData <- datasetInput()[[input$tabs]] %>%
-        filter(time >= input$timeSlider[1] ,
+        dplyr::filter(time >= input$timeSlider[1] ,
                time <= input$timeSlider[2] )
       if (input$resample_perct > 0 ) {
         filteredData <- filteredData %>%
-          sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+          dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
       }
         
     filteredData
@@ -147,8 +147,8 @@ shinyServer(function(input, output, session) {
     if (!is.null(datasetInput()))
     #Save the data into a variable
     pox_data = data() %>%
-        group_by(variable) %>%
-        arrange(time)
+        dplyr::group_by(variable) %>%
+        dplyr::arrange(time)
 
     #Get the spo2 values
     

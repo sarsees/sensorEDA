@@ -38,7 +38,7 @@ dataImport <- function(sensor_data_path){
   return(data)
 }
 
-aggregateData <- function(data_path = "data/2016_7_11_19_0_16/"){
+aggregateData <- function(data_path){
   sensor_file_names <-c(list.files(list.dirs(data_path), pattern = c("*.csv"), full.names =  TRUE),
                         list.files(list.dirs(data_path), pattern = c("*.wav"), full.names =  TRUE))%>%
     data.frame(file_path = ., stringsAsFactors = FALSE) %>%

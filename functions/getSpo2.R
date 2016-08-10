@@ -8,11 +8,11 @@ getSpo2 <- function(data){
 
   #Inputs
 
-  ir_total <- filter(data, variable %in% c("ir"))$value
+  ir_total <- dplyr::filter(data, variable %in% c("ir"))$value
   l_total <- length(ir_total)
   t_total <- as.numeric(seconds(unique(data$time)))
-  red_total <- filter(data, variable %in% c("red"))$value
-  temp_total <- filter(data, variable %in% c("temperature"))$value
+  red_total <- dplyr::filter(data, variable %in% c("red"))$value
+  temp_total <- dplyr::filter(data, variable %in% c("temperature"))$value
 
   #Calculate windowing values
   window_tspan = 5 # in seconds
@@ -106,7 +106,7 @@ getSpo2 <- function(data){
     spo2_2 = 110-25*R
     
     #Save windowing values
-    t_final[window] = as.POSIXct(t_current[length(t_current)], origin = "1970-01-01")
+    t_final[window] = t_current[length(t_current)]
     spo2_final[window] = spo2
     spo2_2_final[window] = spo2_2
     spo2_cap_final[window] = spo2_cap
