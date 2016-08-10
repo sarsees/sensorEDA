@@ -37,5 +37,5 @@ for(library in libraries)
   }
 }
 
-shiny::runApp(launch.browser=TRUE)
+
 
