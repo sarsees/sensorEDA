@@ -5,12 +5,6 @@
 # http://shiny.rstudio.com
 #
 
-library(shiny)
-library(dplyr)
-library(ggplot2)
-library(reshape2)
-library(shinyFiles)
-
 shinyUI(fluidPage(
   tags$style(type="text/css",
              ".shiny-output-warning { visibility: hidden; }",

@@ -4,19 +4,13 @@
 #
 # http://shiny.rstudio.com
 #
-
-library(shiny)
-library(dplyr)
-library(ggplot2)
-library(reshape2)
-library(shinyFiles)
 shinyServer(function(input, output, session) {
   # input: stores the current values of all of the widgets in the app. These values
   # will be saved under the names given to the widget in ui.R
-  source("data_cleaning.R")
-  source("ggplot_custom_theme.R")
-  source("multiplot.R")
-  source("utilities/getSpo2.R")
+  source("functions/data_cleaning.R")
+  source("styles/ggplot_custom_theme.R")
+  source("functions/multiplot.R")
+  source("functions/getSpo2.R")
 
   shinyDirChoose(input,'file', session=session,roots=c(wd='.'))
   datasetInput <- reactive({
