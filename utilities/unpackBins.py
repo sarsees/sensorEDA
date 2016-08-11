@@ -18,7 +18,7 @@ class unpackBins(object):
                         self._unpackADS1015(filename)
 		elif driverName == 'MAX30100':
                         self._unpackMAX30100(filename)
-                elif driverName == 'AdcIn' or driverName == 'GSR5':
+                elif driverName in ['ECG2','ECG3','GSR4']:
                         self._unpackAdcIn(filename)
 		else:
 			raise Exception
