@@ -11,9 +11,9 @@ shinyUI(fluidPage(
              ".shiny-output-warning:before { visibility: hidden; }"
   ),
   # Application title
-  titlePanel(title = div(
-             img(src = "yj_image.jpg", height = 80, width = 80),
-             "YellowJacket")),
+  titlePanel(title = div("YellowJacket",
+             img(src = "yj_image.jpg", height = 80, width = 80)
+             )),
 
   # Sidebar with a slider input for number of bins
   sidebarLayout(
@@ -56,6 +56,8 @@ shinyUI(fluidPage(
                   tabPanel("IMU1", value = "IMU1", plotOutput("imu1_plot", height = 600)),
                   tabPanel("IMU2", value = "IMU2", plotOutput("imu2_plot", height = 600)),
                   tabPanel("PulseOx", value = "PulseOx", plotOutput("pox_plot", height = 600)),
+                  tabPanel("ECG1", value = "ECG1", plotOutput("ecg1_plot", height = 600)),
+                  tabPanel("ECG2", value = "ECG2", plotOutput("ecg2_plot", height = 600)),
                   tabPanel("GSR", value = "GSR", plotOutput("gsr_plot", height = 600)),
                   tabPanel("Temp1", value = "Temp1", plotOutput("temp1_plot", height = 600)),
                   tabPanel("Temp2", value = "Temp2", plotOutput("temp2_plot", height = 600)),

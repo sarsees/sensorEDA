@@ -251,6 +251,80 @@ shinyServer(function(input, output, session) {
     }
     
   })
+  
+  output$ecg1_plot <- renderPlot({
+    # generate plot data based on input$activity from ui.R
+    if(is.null(datasetInput()))
+      (return(NULL))
+    if (!is.null(datasetInput()))
+      # draw the plot
+      if (input$facet == "On"){
+        ############# work on microphone data ################
+        if (input$free_bird == "On"){
+          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+            geom_line()+
+            theme_custom()+
+            theme(axis.text.x = element_text(angle = 90))+
+            facet_wrap(~variable, scales = "free_y")
+          return(p)
+        }
+        if (input$free_bird == "Off"){
+          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+            geom_line()+
+            theme_custom()+
+            theme(axis.text.x = element_text(angle = 90))+
+            facet_wrap(~variable)
+          return(p)
+        }
+      }
+    # draw the plot
+    if (input$facet == "Off"){
+      ############# work on microphone data ################
+      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        geom_line()+
+        theme_custom()+
+        theme(axis.text.x = element_text(angle = 90))
+      return(p)
+    }
+    
+  })
+  
+  output$ecg2_plot <- renderPlot({
+    # generate plot data based on input$activity from ui.R
+    if(is.null(datasetInput()))
+      (return(NULL))
+    if (!is.null(datasetInput()))
+      # draw the plot
+      if (input$facet == "On"){
+        ############# work on microphone data ################
+        if (input$free_bird == "On"){
+          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+            geom_line()+
+            theme_custom()+
+            theme(axis.text.x = element_text(angle = 90))+
+            facet_wrap(~variable, scales = "free_y")
+          return(p)
+        }
+        if (input$free_bird == "Off"){
+          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+            geom_line()+
+            theme_custom()+
+            theme(axis.text.x = element_text(angle = 90))+
+            facet_wrap(~variable)
+          return(p)
+        }
+      }
+    # draw the plot
+    if (input$facet == "Off"){
+      ############# work on microphone data ################
+      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        geom_line()+
+        theme_custom()+
+        theme(axis.text.x = element_text(angle = 90))
+      return(p)
+    }
+    
+  })
   output$temp1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if(is.null(datasetInput()))
