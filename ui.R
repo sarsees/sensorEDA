@@ -5,12 +5,6 @@
 # http://shiny.rstudio.com
 #
 
-library(shiny)
-library(dplyr)
-library(ggplot2)
-library(reshape2)
-library(shinyFiles)
-
 shinyUI(fluidPage(
   tags$style(type="text/css",
              ".shiny-output-warning { visibility: hidden; }",
@@ -47,7 +41,7 @@ shinyUI(fluidPage(
                                  "1%" = 0.010,
                                  "25%" = 0.25,
                                  "50%" = 0.50,
-                                 "None" = 1.0),
+                                 "None" = 0),
                   selected = 0.010)
     ),
 

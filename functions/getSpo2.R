@@ -5,19 +5,15 @@
 require(pracma)
 
 getSpo2 <- function(data){
-  #Get the data
-  #data <- readRDS("/media/yellowjacket/LORENZO/shiny/sensorEDA/utilities/Matlab Legacy Code/data.rds")
-  #data <- data$PulseOx
-  
+
   #Inputs
-  l_total = floor(length(data$variable)/3)
-  ir_total = data$value[1:l_total]
-  #TODO: Read in time correctly
-  t_total = as.numeric(seconds(data$time[1:l_total]))
-  #t_total = seq((1/l_total)*60,60,length=l_total)
-  red_total = data$value[(l_total+1):(2*l_total)]
-  temp_total = data$value[(1+2*l_total):(3*l_total)]
-  
+
+  ir_total <- dplyr::filter(data, variable %in% c("ir"))$value
+  l_total <- length(ir_total)
+  t_total <- as.numeric(seconds(unique(data$time)))
+  red_total <- dplyr::filter(data, variable %in% c("red"))$value
+  temp_total <- dplyr::filter(data, variable %in% c("temperature"))$value
+
   #Calculate windowing values
   window_tspan = 5 # in seconds
   window_overlap_ratio = .5 # .5 = 50%
@@ -28,12 +24,8 @@ getSpo2 <- function(data){
   
   #Check to make sure that the window width is fine
   #Make sure that there are a decent number of windows and that the windows aren't too small
-  if (((5*window_width)>l_total)|(window_width < 5)){
+  if (((4*(window_width-window_overlap)+window_width)>l_total)|(window_width < 5)){
     print('WARNING: Not enough data to calculate SPO2 Values.')
-    print(paste("window_width: ",window_width))
-    print(paste("l_total: ",l_total))
-    print(paste("T_s: ",T_s))
-    print(paste("t_total: ",t_total))
     return(NULL)
   }
   
@@ -114,7 +106,7 @@ getSpo2 <- function(data){
     spo2_2 = 110-25*R
     
     #Save windowing values
-    t_final[window] = as.POSIXct(t_current[length(t_current)], origin = "1970-01-01")
+    t_final[window] = t_current[length(t_current)]
     spo2_final[window] = spo2
     spo2_2_final[window] = spo2_2
     spo2_cap_final[window] = spo2_cap
@@ -123,5 +115,6 @@ getSpo2 <- function(data){
   
   final = data.frame(cbind(t(t(spo2_final)),t(t(spo2_2_final)),t(t(spo2_cap_final)),t(t(HR_final)),t(t(t_final))))
   colnames(final) <- c("spo2", "spo2_2", "spo2_cap", "HR", "time")
+  final$time <- as.POSIXct(as.numeric(final$time), origin = "1970-01-01")
   return(final)
 }
