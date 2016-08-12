@@ -44,3 +44,5 @@ To launch the app from and RStudio working environment, complete the following s
  
 
 ### From the Command Line 
+
+For OSX and Linux users, change the permissions on the *main.R* to have executable powers. For OSX, use `chmod +x main.R`. Then launch the app form the terminal using `Rscript path/to/main.R`
