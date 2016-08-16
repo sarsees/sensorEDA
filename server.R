@@ -158,7 +158,6 @@ shinyServer(function(input, output, session) {
     
     # draw the plot
     if (input$facet == "On"){
-      ############# work on microphone data ################
       if (input$free_bird == "On"){
         p <- ggplot(pox_data, aes(x = time, y = value, color = variable, group = variable))+
           geom_line()+
@@ -169,6 +168,7 @@ shinyServer(function(input, output, session) {
           melted_spo2_data <- melt(spo2_data, id.vars = "time")
           q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
             geom_line()+
+            geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
             facet_wrap(~variable, scales = "free_y")
@@ -187,6 +187,7 @@ shinyServer(function(input, output, session) {
           melted_spo2_data <- melt(spo2_data, id.vars = "time")
           q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
             geom_line()+
+            geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
             facet_wrap(~variable)
