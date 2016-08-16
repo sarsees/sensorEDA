@@ -2,3 +2,5 @@
 .Rdata
 data/*
 *.pyc
+*.Rproj*
+
