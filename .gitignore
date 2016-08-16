@@ -2,6 +2,6 @@
 .Rdata
 data/*
 *.pyc
-*.Rproj*
-
 .Rproj.user
+*.Rproj
+

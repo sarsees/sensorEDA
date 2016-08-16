@@ -31,3 +31,18 @@ There are a few dependencies that must be installed for the app to run. The scri
 
 #Running the App
 
+### From RStudio
+
+To launch the app from and RStudio working environment, complete the following steps (in order):  
+
+ 1. Get the file *install\_and\_source\_dependenices.R* in your environment with `source("path/to/install_and_source_dependenices.R")`  
+ 
+ 2. Launch the app either with `shiny::runApp("path/to/app/root")` or open *ui.R* and click  
+ <img 
+ 	src = "www/run_app.png", width = 80 
+ /img>
+ 
+
+### From the Command Line 
+
+For OSX and Linux users, change the permissions on the *main.R* to have executable powers. For OSX, use `chmod +x main.R`. Then launch the app form the terminal using `Rscript path/to/main.R`
