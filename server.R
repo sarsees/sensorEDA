@@ -47,18 +47,29 @@ shinyServer(function(input, output, session) {
       return(melted_data)
     }
   })
+  
   output$slider <- renderUI({
+    inputData <- datasetInput()
+    if (input$tabs == "ECG") {
+      sliderInput("timeSlider",  
+                  label = h4("Time"),
+                  min=min(inputData[["ECG2"]]$time), max=max(inputData[["ECG2"]]$time), 
+                  value=c(min(inputData[["ECG2"]]$time), median(inputData[["ECG2"]]$time)),
+                  timeFormat = "%T",
+                  animate = TRUE)
+    }else{
     sliderInput("timeSlider",  
                 label = h4("Time"),
-                min=min(datasetInput()[[input$tabs]]$time), max=max(datasetInput()[[input$tabs]]$time), 
-                value=c(min(datasetInput()[[input$tabs]]$time), median(datasetInput()[[input$tabs]]$time)),
+                min=min(inputData[[input$tabs]]$time), max=max(inputData[[input$tabs]]$time), 
+                value=c(min(inputData[[input$tabs]]$time), median(inputData[[input$tabs]]$time)),
                 timeFormat = "%T",
                 animate = TRUE)
+    }
 
   })
   data <- reactive({
-#     if (is.null(datasetInput()))
-#       return(NULL)
+    if (is.null(datasetInput()))
+      return(NULL)
       filteredData <- datasetInput()[[input$tabs]] %>%
         dplyr::filter(time >= input$timeSlider[1] ,
                time <= input$timeSlider[2] )
@@ -72,9 +83,9 @@ shinyServer(function(input, output, session) {
   
   output$imu1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if (is.null(datasetInput()))
+    if (is.null(data()))
       (return(NULL))
-    if (!is.null(datasetInput()))
+    if (!is.null(data()))
     # draw the plot
       if (input$facet == "On"){
       ############# work on microphone data ################
@@ -156,7 +167,6 @@ shinyServer(function(input, output, session) {
     
     # draw the plot
     if (input$facet == "On"){
-      ############# work on microphone data ################
       if (input$free_bird == "On"){
         p <- ggplot(pox_data, aes(x = time, y = value, color = variable, group = variable))+
           geom_line()+
@@ -167,6 +177,7 @@ shinyServer(function(input, output, session) {
           melted_spo2_data <- melt(spo2_data, id.vars = "time")
           q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
             geom_line()+
+            geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
             facet_wrap(~variable, scales = "free_y")
@@ -185,6 +196,7 @@ shinyServer(function(input, output, session) {
           melted_spo2_data <- melt(spo2_data, id.vars = "time")
           q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
             geom_line()+
+            geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
             facet_wrap(~variable)
@@ -250,6 +262,55 @@ shinyServer(function(input, output, session) {
       return(p)
     }
     
+  })
+  
+  output$ecg_plot <- renderPlot({
+    if (is.null(datasetInput()))
+      return(NULL)
+    
+    ecg1 <- datasetInput()[["ECG1"]] %>%
+      dplyr::filter(time >= input$timeSlider[1] ,
+                    time <= input$timeSlider[2] )
+    if (input$resample_perct > 0 ) {
+      ecg1 <- ecg1 %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+    }
+    ecg2 <- datasetInput()[["ECG2"]] %>%
+      dplyr::filter(time >= input$timeSlider[1] ,
+                    time <= input$timeSlider[2] )
+    if (input$resample_perct > 0 ) {
+      ecg2 <- ecg2 %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE)
+    }
+    
+    diff_ecg <- data.frame(time = ecg2$time,
+                           variable = ecg2$variable,
+                           value = ecg2$value - ecg1$value) %>%
+      dplyr::filter(time >= input$timeSlider[1] ,
+                    time <= input$timeSlider[2] )
+    if (input$resample_perct > 0 ) {
+      diff_ecg <- diff_ecg %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE)
+    }
+    
+    #diff_ecg <- data.frame(time = ecg2$time, variable = ecg2$variable, value = ecg2$value - ecg1$value)
+    
+    p <- ggplot(ecg1, aes(x = time, y = value, color = variable, group = variable))+
+      geom_line()+
+      theme_custom()+
+      theme(axis.text.x = element_text(angle = 90))+
+      ggtitle("Electrode I")
+    q <- ggplot(ecg2, aes(x = time, y = value, color = variable, group = variable))+
+      geom_line()+
+      theme_custom()+
+      theme(axis.text.x = element_text(angle = 90))+
+      ggtitle("Electrode II")
+    r <- ggplot(diff_ecg, aes(x = time, y = value, color = variable, group = variable))+
+      geom_line()+
+      theme_custom()+
+      theme(axis.text.x = element_text(angle = 90))+
+      ggtitle("Difference Trace (Lead I)")
+    return(multiplot(p,q,r))
   })
   
   output$ecg1_plot <- renderPlot({
