@@ -47,18 +47,20 @@ shinyServer(function(input, output, session) {
       return(melted_data)
     }
   })
+  
   output$slider <- renderUI({
+    inputData <- datasetInput()
     sliderInput("timeSlider",  
                 label = h4("Time"),
-                min=min(datasetInput()[[input$tabs]]$time), max=max(datasetInput()[[input$tabs]]$time), 
-                value=c(min(datasetInput()[[input$tabs]]$time), median(datasetInput()[[input$tabs]]$time)),
+                min=min(inputData[[input$tabs]]$time), max=max(inputData[[input$tabs]]$time), 
+                value=c(min(inputData[[input$tabs]]$time), median(inputData[[input$tabs]]$time)),
                 timeFormat = "%T",
                 animate = TRUE)
 
   })
   data <- reactive({
-#     if (is.null(datasetInput()))
-#       return(NULL)
+    if (is.null(datasetInput()))
+      return(NULL)
       filteredData <- datasetInput()[[input$tabs]] %>%
         dplyr::filter(time >= input$timeSlider[1] ,
                time <= input$timeSlider[2] )
@@ -72,9 +74,9 @@ shinyServer(function(input, output, session) {
   
   output$imu1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if (is.null(datasetInput()))
+    if (is.null(data()))
       (return(NULL))
-    if (!is.null(datasetInput()))
+    if (!is.null(data()))
     # draw the plot
       if (input$facet == "On"){
       ############# work on microphone data ################
