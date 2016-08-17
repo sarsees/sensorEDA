@@ -151,6 +151,8 @@ shinyServer(function(input, output, session) {
       return(p)
     }
   })
+  
+  ########## PULSE OX PLOT ############
   output$pox_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if(is.null(datasetInput()))
