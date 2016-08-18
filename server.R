@@ -11,6 +11,7 @@ shinyServer(function(input, output, session) {
   source("styles/ggplot_custom_theme.R")
   source("functions/multiplot.R")
   source("functions/getSpo2.R")
+  source('functions/ecg_processing.R')
 
   shinyDirChoose(input,'file', session=session,roots=c(wd='.'))
   datasetInput <- reactive({
@@ -29,11 +30,15 @@ shinyServer(function(input, output, session) {
       
       #Process data
       unmelted_data <- aggregateData(parseDirPath(roots=c(wd='.'), input$file))
+      
+      ### process the ECG data
+      ecg1 <- unmelted_data[['ECG1']]
+      ecg2 <- unmelted_data[['ECG2']]
+      unmelted_data[['ECG']] <- ecg_processing(ecg1, ecg2)
+      
       melted_data <- lapply(unmelted_data, function(x){
-        
-       melt(x, id.vars = "time")
-
-        })
+        melt(x, id.vars = "time")
+      })
       
       #saveRDS(melted_data,"/media/yellowjacket/LORENZO/shiny/sensorEDA/utilities/Matlab Legacy Code/data.rds")
       
@@ -48,22 +53,26 @@ shinyServer(function(input, output, session) {
     }
   })
   
+
+############  ECG  #################
   output$slider <- renderUI({
     inputData <- datasetInput()
     if (input$tabs == "ECG") {
       sliderInput("timeSlider",  
                   label = h4("Time"),
-                  min=min(inputData[["ECG2"]]$time), max=max(inputData[["ECG2"]]$time), 
-                  value=c(min(inputData[["ECG2"]]$time), median(inputData[["ECG2"]]$time)),
+                  min = min(inputData[["ECG"]]$time), 
+                  max = max(inputData[["ECG"]]$time),
+                  value=c(min(inputData[["ECG"]]$time), median(inputData[["ECG"]]$time)),
                   timeFormat = "%T",
                   animate = TRUE)
-    }else{
-    sliderInput("timeSlider",  
-                label = h4("Time"),
-                min=min(inputData[[input$tabs]]$time), max=max(inputData[[input$tabs]]$time), 
-                value=c(min(inputData[[input$tabs]]$time), median(inputData[[input$tabs]]$time)),
-                timeFormat = "%T",
-                animate = TRUE)
+    }
+    if(input$tabs != 'ECG'){
+      sliderInput("timeSlider",  
+                  label = h4("Time"),
+                  min=min(inputData[[input$tabs]]$time), max=max(inputData[[input$tabs]]$time), 
+                  value=c(min(inputData[[input$tabs]]$time), median(inputData[[input$tabs]]$time)),
+                  timeFormat = "%T",
+                  animate = TRUE)
     }
 
   })
@@ -81,6 +90,7 @@ shinyServer(function(input, output, session) {
     filteredData
   })
   
+  ############  IMU 1  #################  
   output$imu1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if (is.null(data()))
@@ -179,7 +189,7 @@ shinyServer(function(input, output, session) {
           melted_spo2_data <- melt(spo2_data, id.vars = "time")
           q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
             geom_line()+
-            geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
+            #geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
             facet_wrap(~variable, scales = "free_y")
@@ -198,7 +208,7 @@ shinyServer(function(input, output, session) {
           melted_spo2_data <- melt(spo2_data, id.vars = "time")
           q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
             geom_line()+
-            geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
+            #geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
             facet_wrap(~variable)
@@ -236,7 +246,7 @@ shinyServer(function(input, output, session) {
     if (!is.null(datasetInput()))
     # draw the plot
     if (input$facet == "On"){
-      ############# work on microphone data ################
+  
       if (input$free_bird == "On"){
         p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
           geom_line()+
@@ -256,7 +266,7 @@ shinyServer(function(input, output, session) {
     }
     # draw the plot
     if (input$facet == "Off"){
-      ############# work on microphone data ################
+
       p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
         geom_line()+
         theme_custom()+
@@ -265,37 +275,14 @@ shinyServer(function(input, output, session) {
     }
     
   })
-  
+############## ECG ###############  
   output$ecg_plot <- renderPlot({
-    if (is.null(datasetInput()))
-      return(NULL)
+    if (is.null(datasetInput())){return(NULL)}
     
-    ecg1 <- datasetInput()[["ECG1"]] %>%
-      dplyr::filter(time >= input$timeSlider[1] ,
-                    time <= input$timeSlider[2] )
-    if (input$resample_perct > 0 ) {
-      ecg1 <- ecg1 %>%
-        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
-    }
-    ecg2 <- datasetInput()[["ECG2"]] %>%
-      dplyr::filter(time >= input$timeSlider[1] ,
-                    time <= input$timeSlider[2] )
-    if (input$resample_perct > 0 ) {
-      ecg2 <- ecg2 %>%
-        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE)
-    }
-    
-    diff_ecg <- data.frame(time = ecg2$time,
-                           variable = ecg2$variable,
-                           value = ecg2$value - ecg1$value) %>%
-      dplyr::filter(time >= input$timeSlider[1] ,
-                    time <= input$timeSlider[2] )
-    if (input$resample_perct > 0 ) {
-      diff_ecg <- diff_ecg %>%
-        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE)
-    }
-    
-    #diff_ecg <- data.frame(time = ecg2$time, variable = ecg2$variable, value = ecg2$value - ecg1$value)
+    ecg <- datasetInput()[['ECG']]
+    ecg_diff <- dplyr::filter(ecg, variable == 'ecg_diff')
+    ecg1 <- dplyr::filter(ecg, variable == 'ecg1')
+    ecg2 <- dplyr::filter(ecg, variable == 'ecg2')
     
     p <- ggplot(ecg1, aes(x = time, y = value, color = variable, group = variable))+
       geom_line()+
@@ -307,7 +294,7 @@ shinyServer(function(input, output, session) {
       theme_custom()+
       theme(axis.text.x = element_text(angle = 90))+
       ggtitle("Electrode II")
-    r <- ggplot(diff_ecg, aes(x = time, y = value, color = variable, group = variable))+
+    r <- ggplot(ecg_diff, aes(x = time, y = value, color = variable, group = variable))+
       geom_line()+
       theme_custom()+
       theme(axis.text.x = element_text(angle = 90))+
