@@ -12,7 +12,7 @@ getSpo2 <- function(data){
   l_total <- length(ir_total)
   t_total <- as.numeric(seconds(unique(data$time)))
   red_total <- dplyr::filter(data, variable %in% c("red"))$value
-  temp_total <- dplyr::filter(data, variable %in% c("temperature"))$value
+  #temp_total <- dplyr::filter(data, variable %in% c("temperature"))$value
 
   #Calculate windowing values
   window_tspan = 5 # in seconds
@@ -50,6 +50,8 @@ getSpo2 <- function(data){
   spo2_final = seq(0,0,length=number_of_spo2_points)
   spo2_2_final = seq(0,0,length=number_of_spo2_points)
   spo2_cap_final = seq(0,0,length=number_of_spo2_points)
+  spo2_3_final = seq(0,0,length=number_of_spo2_points)
+  spo2_4_final = seq(0,0,length=number_of_spo2_points)
   HR_final = seq(0,0,length=number_of_spo2_points)
   for(window in seq(1,number_of_spo2_points)){
     #Get the current window's values
@@ -90,7 +92,7 @@ getSpo2 <- function(data){
     tspan = t2[length(t2)]-t2[1]
     HR_ir = 60*length(ir_peaks_values)/tspan
     HR_red = 60*length(red_peaks_values)/tspan
-    HR = .5*(HR_ir+HR_red)
+    HR = .5*(HR_ir + HR_red)
     
     #Calculate the AC and DC values for each of the intensities
     I_ir_ac = mean(ir_peaks_values) + mean(ir_peaks_values)
@@ -104,17 +106,28 @@ getSpo2 <- function(data){
     R = (I_red_ac/I_red_dc)/(I_ir_ac/I_ir_dc)
     spo2 = 100*(e_rd-R*e_ird)/(R*(e_iro-e_ird)-(e_ro-e_rd))
     spo2_2 = 110-25*R
+    spo2_3 = 112.7783-32.811*R
+    spo2_4 = 241.0519*R
+    
     
     #Save windowing values
     t_final[window] = t_current[length(t_current)]
     spo2_final[window] = spo2
     spo2_2_final[window] = spo2_2
     spo2_cap_final[window] = spo2_cap
+    spo2_3_final[window] = spo2_3
+    spo2_4_final[window] = spo2_4
     HR_final[window] = HR
   }
   
-  final = data.frame(cbind(t(t(spo2_final)),t(t(spo2_2_final)),t(t(spo2_cap_final)),t(t(HR_final)),t(t(t_final))))
-  colnames(final) <- c("spo2", "spo2_2", "spo2_cap", "HR", "time")
+  final = data.frame(cbind(t(t(spo2_final)),
+                           t(t(spo2_2_final)),
+                           t(t(spo2_cap_final)),
+                           t(t(spo2_3_final)),
+                           t(t(spo2_4_final)),
+                           t(t(HR_final)),
+                           t(t(t_final))))
+  colnames(final) <- c("spo2", "spo2_2", "spo2_3", "spo2_4", "spo2_cap", "HR", "time")
   final$time <- as.POSIXct(as.numeric(final$time), origin = "1970-01-01")
   return(final)
 }
