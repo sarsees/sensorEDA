@@ -5,8 +5,8 @@
 # http://shiny.rstudio.com
 #
 
-shinyUI(fluidPage(
-  tags$style(type="text/css",
+shinyUI(fluidPage(theme = "yeti.css",
+  tags$style(type = "text/css",
              ".shiny-output-warning { visibility: hidden; }",
              ".shiny-output-warning:before { visibility: hidden; }"
   ),
