@@ -12,6 +12,7 @@ shinyServer(function(input, output, session) {
   source("functions/multiplot.R")
   source("functions/getSpo2.R")
   source('functions/ecg_processing.R')
+  source('functions/computeFrequencyContent.R')
 
   shinyDirChoose(input,'file', session=session,roots=c(wd='.'))
   datasetInput <- reactive({
@@ -39,6 +40,7 @@ shinyServer(function(input, output, session) {
       melted_data <- lapply(unmelted_data, function(x){
         melt(x, id.vars = "time")
       })
+      melted_data[["Microphone"]] <- unmelted_data[["Microphone"]]
       
       #saveRDS(melted_data,"/media/yellowjacket/LORENZO/shiny/sensorEDA/utilities/Matlab Legacy Code/data.rds")
       
@@ -445,39 +447,49 @@ shinyServer(function(input, output, session) {
       return(p)
     }
   })
+  
   output$mic_plot <- renderPlot({
-    # generate plot data based on input$activity from ui.R
     if (!is.null(datasetInput()))
+    left <- data() %>%
+      select(Left, time)
+    right <- data() %>%
+      select(Right, time)
     
-    # draw the plot
-    if (input$facet == "On"){
-      ############# work on microphone data ################
-      if (input$free_bird == "On"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
-          geom_line()+
-          theme_custom()+
-          theme(axis.text.x = element_text(angle = 90))+
-          facet_wrap(~variable, scales = "free_y")
-        return(p)
-      }
-      if (input$free_bird == "Off"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
-          geom_line()+
-          theme_custom()+
-          theme(axis.text.x = element_text(angle = 90))+
-          facet_wrap(~variable)
-        return(p)
-      }
-    }
-    # draw the plot
-    if (input$facet == "Off"){
-      ############# work on microphone data ################
-      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
-        geom_line()+
-        theme_custom()+
-        theme(axis.text.x = element_text(angle = 90))
-      return(p)
-    }
+    left_fft <- computeFrequencyContent(left$Left, 44100)
+    right_fft <- computeFrequencyContent(right$Right, 44100)
+
+    jeff <- ggplot(left, aes(x = time, y = Left))+
+      geom_line()+
+      theme_custom()+
+      theme(axis.text.x = element_text(angle = 90))+
+      xlab("Time (ms)")+
+      ylab("Amplitude")+
+      ggtitle("Left Channel")
+    
+    gold <- ggplot(left, aes(x = time, y = Left))+
+      geom_line()+
+      theme_custom()+
+      theme(axis.text.x = element_text(angle = 90))+
+      xlab("Time (ms)")+
+      ylab("Amplitude")+
+      ggtitle("Right Channel")
+    
+    
+    blum <- ggplot(left_fft, aes(x = 10*log10(p), y = freqArray/1000))+
+      geom_line()+
+      theme_custom()+
+      theme(axis.text.x = element_text(angle = 90))+
+      xlab("Frequency (kHz)")+
+      ylab("Power (dB)")
+    
+    m <- ggplot(right_fft, aes(x = 10*log10(p), y = freqArray/1000))+
+      geom_line()+
+      theme_custom()+
+      theme(axis.text.x = element_text(angle = 90))+
+      xlab("Frequency (kHz)")+
+      ylab("Power (dB)")
+    return(multiplot(jeff, gold, blum, m))
+      
   })
   
 })

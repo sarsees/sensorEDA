@@ -55,14 +55,14 @@ shinyUI(fluidPage(theme = "yeti.css",
       tabsetPanel(id = "tabs", 
                   tabPanel("IMU1", plotOutput("imu1_plot", height = 600)),
                   tabPanel("IMU2", plotOutput("imu2_plot", height = 600)),
-                  tabPanel("PulseOx", plotOutput("pox_plot", height = 600)),
+                  tabPanel("PulseOx", plotOutput("pox_plot", height = 900)),
                   tabPanel("ECG1", plotOutput("ecg1_plot", height = 600)),
                   tabPanel("ECG2", plotOutput("ecg2_plot", height = 600)),
                   tabPanel("ECG", plotOutput("ecg_plot", height = 800)),
                   tabPanel("GSR", plotOutput("gsr_plot", height = 600)),
                   tabPanel("Temp1", plotOutput("temp1_plot", height = 600)),
                   tabPanel("Temp2", plotOutput("temp2_plot", height = 600)),
-                  tabPanel("Microphone", plotOutput("mic_plot", height = 600))
+                  tabPanel("Microphone", plotOutput("mic_plot", height = 900))
                   )
     )
   )
