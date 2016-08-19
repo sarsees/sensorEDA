@@ -277,7 +277,7 @@ shinyServer(function(input, output, session) {
     }
     
   })
-############## ECG ###############  
+  ############## ECG ###############  
   output$ecg_plot <- renderPlot({
     if (is.null(datasetInput())){return(NULL)}
     
@@ -455,9 +455,6 @@ shinyServer(function(input, output, session) {
     right <- data() %>%
       select(Right, time)
     
-    left_fft <- computeFrequencyContent(left$Left, 44100)
-    right_fft <- computeFrequencyContent(right$Right, 44100)
-
     jeff <- ggplot(left, aes(x = time, y = Left))+
       geom_line()+
       theme_custom()+
@@ -474,22 +471,26 @@ shinyServer(function(input, output, session) {
       ylab("Amplitude")+
       ggtitle("Right Channel")
     
-    
-    blum <- ggplot(left_fft, aes(x = 10*log10(p), y = freqArray/1000))+
-      geom_line()+
-      theme_custom()+
-      theme(axis.text.x = element_text(angle = 90))+
-      xlab("Frequency (kHz)")+
-      ylab("Power (dB)")
-    
-    m <- ggplot(right_fft, aes(x = 10*log10(p), y = freqArray/1000))+
-      geom_line()+
-      theme_custom()+
-      theme(axis.text.x = element_text(angle = 90))+
-      xlab("Frequency (kHz)")+
-      ylab("Power (dB)")
-    return(multiplot(jeff, gold, blum, m))
+    if(input$FFT == "On"){
+      left_fft <- computeFrequencyContent(left$Left, 44100)
+      right_fft <- computeFrequencyContent(right$Right, 44100) 
       
+      blum <- ggplot(left_fft, aes(x = 10*log10(p), y = freqArray/1000))+
+        geom_line()+
+        theme_custom()+
+        theme(axis.text.x = element_text(angle = 90))+
+        xlab("Frequency (kHz)")+
+        ylab("Power (dB)")
+      
+      m <- ggplot(right_fft, aes(x = 10*log10(p), y = freqArray/1000))+
+        geom_line()+
+        theme_custom()+
+        theme(axis.text.x = element_text(angle = 90))+
+        xlab("Frequency (kHz)")+
+        ylab("Power (dB)")
+      return(multiplot(jeff, gold, blum, m))
+    }
+    return(multiplot(jeff, gold))
   })
   
 })
