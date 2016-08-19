@@ -477,7 +477,7 @@ shinyServer(function(input, output, session) {
       ylab("Amplitude")+
       ggtitle("Left Channel")
     
-    gold <- ggplot(left, aes(x = time, y = Left))+
+    gold <- ggplot(right, aes(x = time, y = Right))+
       geom_line()+
       theme_custom()+
       theme(axis.text.x = element_text(angle = 90))+
@@ -489,19 +489,19 @@ shinyServer(function(input, output, session) {
       left_fft <- computeFrequencyContent(left$Left, 44100)
       right_fft <- computeFrequencyContent(right$Right, 44100) 
       
-      blum <- ggplot(left_fft, aes(x = 10*log10(p), y = freqArray/1000))+
+      blum <- ggplot(left_fft, aes(x = p, y = freqArray/1000))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))+
         xlab("Frequency (kHz)")+
-        ylab("Power (dB)")
+        ylab("Magnitude")
       
-      m <- ggplot(right_fft, aes(x = 10*log10(p), y = freqArray/1000))+
+      m <- ggplot(right_fft, aes(x = p, y = freqArray/1000))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))+
         xlab("Frequency (kHz)")+
-        ylab("Power (dB)")
+        ylab("Magnitude")
       return(multiplot(jeff, gold, blum, m))
     }
     return(multiplot(jeff, gold))
