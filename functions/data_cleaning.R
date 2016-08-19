@@ -6,11 +6,18 @@ require(stringr)
 require(tuneR)
 require(lubridate)
 options(digits.secs=6)
-
 micImport <- function(sensor_data_path){
   audioWave <- readWave(sensor_data_path)
   time_span <- length(audioWave@left)/audioWave@samp.rate
-  results <- data.frame(Left = audioWave@left, Right = audioWave@right, time = seq(from = 0,  to = time_span, along.with = audioWave@left))
+  left <- audioWave@left
+  # convert to floating point
+  left <- left/2^(audioWave@bit - 1) 
+  right <- audioWave@right
+  right <- right/2^(audioWave@bit -1)
+  timeArray <- seq(from = 0,  to = time_span, along.with = audioWave@left)
+  # scale to milliseconds
+  timeArray <- timeArray * 1000
+  results <- data.frame(Left = left, Right = right, time = timeArray)
   return(results)
 }
 dataImport <- function(sensor_data_path){
