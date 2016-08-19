@@ -19,7 +19,9 @@ class unpackBins(object):
 		elif driverName == 'MAX30100':
                         self._unpackMAX30100(filename)
                 elif driverName in ['ECG2','ECG3','GSR4']:
-                        self._unpackAdcIn(filename)
+                        self._unpackAdcIn(filename,1)
+                elif driverName in ['ECG2-3']:
+                        self._unpackAdcIn(filename,2)
 		else:
 			raise Exception
 	def _getHeaderLength(self,raw):
@@ -29,14 +31,14 @@ class unpackBins(object):
                 else:
                         return len(header[0]) + len(self.delimiter)
 
-	def _unpackAdcIn(self, filename):
+	def _unpackAdcIn(self, filename, num_of_channels):
 		#print('Unpacking AdcIn....')
 		#Logging Event Added -BGH
 		logging.info(('Unpacking AdcIn....'))
 
 		#AdcIn data specs
-		data_points = 2
-		block_size = 1*2 + 1*8 #data_points * data_point_size
+		data_points = 1 + num_of_channels
+		block_size = num_of_channels*2 + 1*8 #data_points * data_point_size
 
 		#Open file and read data
 		fid = open(filename,'rb+')
@@ -51,7 +53,8 @@ class unpackBins(object):
 		#extract actual numbers
 		data = []
 		for i in range(len(raw)/block_size):
-			data.append(unpack('=Hd',raw[i*block_size:(i+1)*block_size]))
+                        unpack_format = '=' + ''.join(['H' for a in range(num_of_channels)]) + 'd'
+			data.append(unpack(unpack_format,raw[i*block_size:(i+1)*block_size]))
 
                 #New file for header
                 filename_2 = filename[:-4] + '_meta.txt'
@@ -72,11 +75,14 @@ class unpackBins(object):
                 #startTime = data[0][1]
 		for i in range(len(data)):
                         #Voltage
-                        voltage = float(data[i][0])/1000
-			fid.write(f.format(voltage) + ', ')
+                        
+                        voltage = []
+                        for c in range(num_of_channels):
+                            voltage.append(float(data[i][0])/1000)
+			    fid.write(f.format(voltage[-1]) + ', ')
 
                         #Time
-                        fid.write("{:.6f}".format(data[i][1]) + '\n')
+                        fid.write("{:.6f}".format(data[i][-1]) + '\n')
 
 		#Close file
 		fid.close()
