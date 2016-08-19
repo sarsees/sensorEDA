@@ -14,11 +14,12 @@ shinyServer(function(input, output, session) {
   source('functions/ecg_processing.R')
   source('functions/computeFrequencyContent.R')
 
+  #------------ Choose a directory to source data ------------#
   shinyDirChoose(input,'file', session=session,roots=c(wd='.'))
+  
+  #------------ Read and preprocess all the data in dir input$file ------------#
   datasetInput <- reactive({
     if (is.null(input$file)){
-      #unmelted_data <- aggregateData(data_path = "./data/2016_7_11_19_0_16/")
-      #melted_data <- lapply(unmelted_data, function(x) melt(x, id.vars = "time"))
       return(NULL)
     }
     if (!is.null(input$file)){
@@ -40,10 +41,8 @@ shinyServer(function(input, output, session) {
       melted_data <- lapply(unmelted_data, function(x){
         melt(x, id.vars = "time")
       })
+      
       melted_data[["Microphone"]] <- unmelted_data[["Microphone"]]
-      
-      #saveRDS(melted_data,"/media/yellowjacket/LORENZO/shiny/sensorEDA/utilities/Matlab Legacy Code/data.rds")
-      
       #Remove all csv and txt files
       rm_csv_command <- paste("rm ",data_folder_path,"/*.csv",sep="")
       rm_txt_command <- paste("rm ",data_folder_path,"/*.txt",sep="")
@@ -56,7 +55,7 @@ shinyServer(function(input, output, session) {
   })
   
 
-############  ECG  #################
+  #------------ Allow for time subsetting with a slider dependent upon the ui's timeSlider ----#
   output$slider <- renderUI({
     inputData <- datasetInput()
     if (input$tabs == "ECG") {
@@ -78,6 +77,8 @@ shinyServer(function(input, output, session) {
     }
 
   })
+  
+  #------------ Subset data by tab and time slider inputs ----#
   data <- reactive({
     if (is.null(datasetInput()))
       return(NULL)
@@ -92,7 +93,9 @@ shinyServer(function(input, output, session) {
     filteredData
   })
   
-  ############  IMU 1  #################  
+  ############  Plots  #################
+  
+  #---------- IMU1 --------------------#
   output$imu1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if (is.null(data()))
@@ -128,6 +131,8 @@ shinyServer(function(input, output, session) {
       }
     
   })
+  
+  #---------- IMU2 --------------------#
   output$imu2_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if(is.null(datasetInput()))
@@ -164,7 +169,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ########## PULSE OX PLOT ############
+  #---------- PulseOx --------------------#
   output$pox_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if(is.null(datasetInput()))
@@ -241,6 +246,8 @@ shinyServer(function(input, output, session) {
     
     return(multiplot(p,q))
   })
+  
+  #---------- GSR --------------------#
   output$gsr_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if(is.null(datasetInput()))
@@ -277,7 +284,8 @@ shinyServer(function(input, output, session) {
     }
     
   })
-  ############## ECG ###############  
+  
+  #---------- Differential ECG -----------# 
   output$ecg_plot <- renderPlot({
     if (is.null(datasetInput())){return(NULL)}
     
@@ -304,6 +312,7 @@ shinyServer(function(input, output, session) {
     return(multiplot(p,q,r))
   })
   
+  #---------- Raw ECG1 -------------------#
   output$ecg1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if(is.null(datasetInput()))
@@ -341,6 +350,7 @@ shinyServer(function(input, output, session) {
     
   })
   
+  #---------- Raw ECG2 -------------------#
   output$ecg2_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if(is.null(datasetInput()))
@@ -377,6 +387,8 @@ shinyServer(function(input, output, session) {
     }
     
   })
+  
+  #---------- Temp1 --------------------#
   output$temp1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if(is.null(datasetInput()))
@@ -412,6 +424,8 @@ shinyServer(function(input, output, session) {
       return(p)
     }
   })
+  
+  #---------- Temp2 --------------------#
   output$temp2_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
     if(is.null(datasetInput()))
@@ -448,6 +462,7 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  #---------- Mic --------------------#
   output$mic_plot <- renderPlot({
     if (!is.null(datasetInput()))
     left <- data() %>%
