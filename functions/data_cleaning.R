@@ -53,8 +53,9 @@ aggregateData <- function(data_path){
     dplyr::mutate(sensor_type = ifelse(grepl("BNO055_N1", file_path), yes = "IMU1", no = "Undecided"))
   sensor_file_names[which(grepl("BNO055_N2", sensor_file_names$file_path)), "sensor_type"] <- "IMU2"
   sensor_file_names[which(grepl("GSR4", sensor_file_names$file_path)), "sensor_type"] <- "GSR"
-  sensor_file_names[which(grepl("ECG2", sensor_file_names$file_path)), "sensor_type"] <- "ECG1"
-  sensor_file_names[which(grepl("ECG3", sensor_file_names$file_path)), "sensor_type"] <- "ECG2"
+#  sensor_file_names[which(grepl("ECG2", sensor_file_names$file_path)), "sensor_type"] <- "ECG1"
+#  sensor_file_names[which(grepl("ECG3", sensor_file_names$file_path)), "sensor_type"] <- "ECG2"
+  sensor_file_names[which(grepl("ECG2-3", sensor_file_names$file_path)), "sensor_type"] <- "ECG"
   sensor_file_names[which(grepl("MAX30100", sensor_file_names$file_path)), "sensor_type"] <- "PulseOx"
   sensor_file_names[which(grepl("MCP9808_N1", sensor_file_names$file_path)), "sensor_type"] <- "Temp1"
   sensor_file_names[which(grepl("MCP9808_N2", sensor_file_names$file_path)), "sensor_type"] <- "Temp2"

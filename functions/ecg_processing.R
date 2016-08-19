@@ -3,17 +3,18 @@
 #' 
 #' @param ecg1 object with column names time and volt
 #' @param ecg2 object with column names time and volt
-ecg_processing <- function(ecg1, ecg2){
+ecg_processing <- function(ecg){
   Hz <- 60 # assuming sampling is at 60Hz
-  min_t <- max(min(ecg1$time), min(ecg2$time))
-  max_t <- min(max(ecg1$time), max(ecg2$time))
+  min_t <- max(min(ecg$time), min(ecg$time))
+  max_t <- min(max(ecg$time), max(ecg$time))
   
   # create vector of time points for evaluating ECG curves
-  ts <- seq(from = min_t, to = max_t, length = Hz*(max_t - min_t)) 
+  #ts <- seq(from = min_t, to = max_t, length = Hz*(max_t - min_t)) 
+  ts <- ecg$time 
   
   # fit each curve with a linear interpolating function
-  ecg1_fit <- approxfun(ecg1$time, ecg1$volt)
-  ecg2_fit <- approxfun(ecg2$time, ecg2$volt)
+  ecg1_fit <- approxfun(ecg$time, ecg$volt1)
+  ecg2_fit <- approxfun(ecg$time, ecg$volt2)
   
   # compute fitted values for each curve
   fit_ecg1 <- ecg1_fit(ts)
