@@ -489,14 +489,14 @@ shinyServer(function(input, output, session) {
       left_fft <- computeFrequencyContent(left$Left, 44100)
       right_fft <- computeFrequencyContent(right$Right, 44100) 
       
-      blum <- ggplot(left_fft, aes(x = p, y = freqArray/1000))+
+      blum <- ggplot(left_fft, aes(y = p, x = freqArray/1000))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))+
         xlab("Frequency (kHz)")+
         ylab("Magnitude")
       
-      m <- ggplot(right_fft, aes(x = p, y = freqArray/1000))+
+      m <- ggplot(right_fft, aes(y = p, x = freqArray/1000))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))+
