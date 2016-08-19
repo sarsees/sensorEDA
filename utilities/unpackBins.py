@@ -70,7 +70,9 @@ class unpackBins(object):
 		#Iterate through each line, then each data point
 		filename_3 = filename[:-4] + '.csv'
 		fid = open(filename_3,'w')
-		fid.write('volt, time\n')
+		for i in range(num_of_channels):
+			fid.write('volt' + str(i+1) +', ')
+		fid.write('time\n')
                 f = "{:.3f}"
                 #startTime = data[0][1]
 		for i in range(len(data)):
