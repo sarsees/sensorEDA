@@ -62,7 +62,13 @@ shinyUI(fluidPage(theme = "yeti.css",
                   tabPanel("GSR", plotOutput("gsr_plot", height = 600)),
                   tabPanel("Temp1", plotOutput("temp1_plot", height = 600)),
                   tabPanel("Temp2", plotOutput("temp2_plot", height = 600)),
-                  tabPanel("Microphone", plotOutput("mic_plot", height = 900))
+                  tabPanel("Microphone",
+                           fluidPage(
+                             plotOutput("mic_plot", height = 900),
+                             hr(),
+                             radioButtons("FFT", label = "Perform FFT? CAUTION: This may take a while", choices = list("On" = "On", "Off" = "Off"), selected = "Off")
+                             )
+                          )
                   )
     )
   )
