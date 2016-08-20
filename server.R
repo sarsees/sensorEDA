@@ -15,7 +15,7 @@ shinyServer(function(input, output, session) {
   source('functions/computeFrequencyContent.R')
 
   #------------ Choose a directory to source data ------------#
-  shinyDirChoose(input,'file', session=session,roots=c(wd='.'))
+  shinyDirChoose(input,'file', session = session, roots = c(wd = '.'))
   
   #------------ Read and preprocess all the data in dir input$file ------------#
   datasetInput <- reactive({
@@ -24,14 +24,14 @@ shinyServer(function(input, output, session) {
     }
     if (!is.null(input$file)){
       #Full folder path
-      data_folder_path = paste(parseDirPath(roots=c(wd=getwd()),input$file))
+      data_folder_path = paste(parseDirPath(roots = c(wd = getwd()), input$file))
       
       #Run CSV Converter
-      csv_command <- paste("python ", getwd(),'/utilities/unpack_driver.py ',data_folder_path,sep="")
+      csv_command <- paste("python ", getwd(),'/utilities/unpack_driver.py ', data_folder_path, sep = "")
       system(csv_command)
       
       #Process data
-      unmelted_data <- aggregateData(parseDirPath(roots=c(wd='.'), input$file))
+      unmelted_data <- aggregateData(data_folder_path)
       
       ### process the ECG data
       ecg <- unmelted_data[['ECG']]
@@ -56,17 +56,11 @@ shinyServer(function(input, output, session) {
 
   #------------ Allow for time subsetting with a slider dependent upon the ui's timeSlider ----#
   output$slider <- renderUI({
-    inputData <- datasetInput()
-    if (input$tabs == "ECG") {
-      sliderInput("timeSlider",  
-                  label = h4("Time"),
-                  min = min(inputData[["ECG"]]$time), 
-                  max = max(inputData[["ECG"]]$time),
-                  value=c(min(inputData[["ECG"]]$time), median(inputData[["ECG"]]$time)),
-                  timeFormat = "%T",
-                  animate = TRUE)
+    if (is.null(datasetInput())) {
+      return(NULL)
     }
-    if(input$tabs != 'ECG'){
+    if (!is.null(datasetInput())) {
+      inputData <- datasetInput()
       sliderInput("timeSlider",  
                   label = h4("Time"),
                   min=min(inputData[[input$tabs]]$time), max=max(inputData[[input$tabs]]$time), 
@@ -74,6 +68,7 @@ shinyServer(function(input, output, session) {
                   timeFormat = "%T",
                   animate = TRUE)
     }
+    
 
   })
   
@@ -84,13 +79,8 @@ shinyServer(function(input, output, session) {
       filteredData <- datasetInput()[[input$tabs]] %>%
         dplyr::filter(time >= input$timeSlider[1] ,
                time <= input$timeSlider[2] )
-      if (input$resample_perct > 0 ) {
-        filteredData <- filteredData %>%
-          dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
-      }
-        
-    filteredData
-  })
+    return(filteredData)
+  }) 
   
   ############  Plots  #################
   
@@ -100,11 +90,17 @@ shinyServer(function(input, output, session) {
     if (is.null(data()))
       (return(NULL))
     if (!is.null(data()))
+      plot_data <- data()
+    if (input$resample_perct < 1 ) {
+      plot_data <- data() %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+    }
+    
     # draw the plot
       if (input$facet == "On"){
       ############# work on microphone data ################
         if (input$free_bird == "On"){
-          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+          p <- ggplot(plot_data, aes(x = time, y = value, color = variable, group = variable))+
             geom_line()+
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
@@ -112,7 +108,7 @@ shinyServer(function(input, output, session) {
           return(p)
         }
         if (input$free_bird == "Off"){
-          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+          p <- ggplot(plot_data, aes(x = time, y = value, color = variable, group = variable))+
             geom_line()+
             theme_custom()+
             theme(axis.text.x = element_text(angle = 90))+
@@ -122,7 +118,7 @@ shinyServer(function(input, output, session) {
     }
     # draw the plot
       if (input$facet == "Off"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable, group = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))
@@ -134,14 +130,22 @@ shinyServer(function(input, output, session) {
   #---------- IMU2 --------------------#
   output$imu2_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if(is.null(datasetInput()))
-      (return(NULL))
-    if (!is.null(datasetInput()))
+    if (is.null(datasetInput())) {
+      return(NULL)
+    }
+    if (!is.null(data())) {
+      plot_data <- data()
+    }
+    if (input$resample_perct < 1 ) {
+      plot_data <- data() %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+    }
+      
     # draw the plot
     if (input$facet == "On"){
       ############# work on microphone data ################
       if (input$free_bird == "On"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable, group = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
@@ -149,7 +153,7 @@ shinyServer(function(input, output, session) {
         return(p)
       }
       if (input$free_bird == "Off"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable, group = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
@@ -160,7 +164,7 @@ shinyServer(function(input, output, session) {
     # draw the plot
     if (input$facet == "Off"){
       ############# work on microphone data ################
-      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+      p <- ggplot(plot_data, aes(x = time, y = value, color = variable, group = variable))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))
@@ -171,28 +175,36 @@ shinyServer(function(input, output, session) {
   #---------- PulseOx --------------------#
   output$pox_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if(is.null(datasetInput()))
-      (return(NULL))
-    if (!is.null(datasetInput()))
+    if (is.null(datasetInput())) {
+      return(NULL)
+    }
+    if (!is.null(datasetInput())) {
     #Save the data into a variable
     pox_data = data() %>%
         dplyr::group_by(variable) %>%
         dplyr::arrange(time)
-
     #Get the spo2 values
-    
     spo2_data = getSpo2(pox_data)
+    plot_data <- pox_data
+    spo2_data_plot <- spo2_data
+    if (input$resample_perct < 1 ) {
+      plot_data <- pox_data %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE)
+      if(!is.null(spo2_data))
+      spo2_data_plot <- spo2_data %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+    }
     
     # draw the plot
     if (input$facet == "On"){
       if (input$free_bird == "On"){
-        p <- ggplot(pox_data, aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
           facet_wrap(~variable, scales = "free_y")
         if(!is.null(spo2_data)){
-          melted_spo2_data <- melt(spo2_data, id.vars = "time")
+          melted_spo2_data <- melt(spo2_data_plot, id.vars = "time")
           q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
             geom_line()+
             #geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
@@ -205,13 +217,13 @@ shinyServer(function(input, output, session) {
         }
       }
       if (input$free_bird == "Off"){
-        p <- ggplot(pox_data, aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
           facet_wrap(~variable)
         if(!is.null(spo2_data)){
-          melted_spo2_data <- melt(spo2_data, id.vars = "time")
+          melted_spo2_data <- melt(spo2_data_plot, id.vars = "time")
           q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
             geom_line()+
             #geom_hline(yintercept=c(90,100), linetype = 'dotted', color = 'red') +
@@ -227,12 +239,12 @@ shinyServer(function(input, output, session) {
     # draw the plot
     if (input$facet == "Off"){
       ############# work on microphone data ################
-      p <- ggplot(pox_data, aes(x = time, y = value, color = variable, group = variable))+
+      p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))
       if(!is.null(spo2_data)){
-        melted_spo2_data <- melt(spo2_data, id.vars = "time")
+        melted_spo2_data <- melt(spo2_data_plot, id.vars = "time")
         q <- ggplot(melted_spo2_data, aes(x = time, y = value, color = variable))+
           geom_line()+
           theme_custom()+
@@ -244,19 +256,27 @@ shinyServer(function(input, output, session) {
     }
     
     return(multiplot(p,q))
+    }
   })
   
   #---------- GSR --------------------#
   output$gsr_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if(is.null(datasetInput()))
-      (return(NULL))
-    if (!is.null(datasetInput()))
+    if (is.null(datasetInput())) {
+      return(NULL)
+    }
+    if (!is.null(data())) {
+      plot_data <- data()
+    }
+    if (input$resample_perct < 1 ) {
+      plot_data <- plot_data %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+    }
     # draw the plot
     if (input$facet == "On"){
   
       if (input$free_bird == "On"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
@@ -264,7 +284,7 @@ shinyServer(function(input, output, session) {
         return(p)
       }
       if (input$free_bird == "Off"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
@@ -275,7 +295,7 @@ shinyServer(function(input, output, session) {
     # draw the plot
     if (input$facet == "Off"){
 
-      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+      p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))
@@ -286,61 +306,41 @@ shinyServer(function(input, output, session) {
   
   #---------- Differential ECG -----------# 
   output$ecg_plot <- renderPlot({
-    if (is.null(datasetInput())){return(NULL)}
+    if (is.null(datasetInput())) {
+      return(NULL)
+    }
     
-    ecg <- datasetInput()[['ECG']]
-    ecg_diff <- dplyr::filter(ecg, variable == 'ecg_diff')
-    ecg1 <- dplyr::filter(ecg, variable == 'ecg1')
-    ecg2 <- dplyr::filter(ecg, variable == 'ecg2')
-    
-    p <- ggplot(ecg1, aes(x = time, y = value, color = variable, group = variable))+
-      geom_line()+
-      theme_custom()+
-      theme(axis.text.x = element_text(angle = 90))+
-      ggtitle("Electrode I")
-    q <- ggplot(ecg2, aes(x = time, y = value, color = variable, group = variable))+
-      geom_line()+
-      theme_custom()+
-      theme(axis.text.x = element_text(angle = 90))+
-      ggtitle("Electrode II")
-    r <- ggplot(ecg_diff, aes(x = time, y = value, color = variable, group = variable))+
-      geom_line()+
-      theme_custom()+
-      theme(axis.text.x = element_text(angle = 90))+
-      ggtitle("Difference Trace (Lead I)")
-    return(multiplot(p,q,r))
-  })
-  
-  #---------- Raw ECG1 -------------------#
-  output$ecg1_plot <- renderPlot({
-    # generate plot data based on input$activity from ui.R
-    if(is.null(datasetInput()))
-      (return(NULL))
-    if (!is.null(datasetInput()))
-      # draw the plot
-      if (input$facet == "On"){
-        ############# work on microphone data ################
-        if (input$free_bird == "On"){
-          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
-            geom_line()+
-            theme_custom()+
-            theme(axis.text.x = element_text(angle = 90))+
-            facet_wrap(~variable, scales = "free_y")
-          return(p)
-        }
-        if (input$free_bird == "Off"){
-          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
-            geom_line()+
-            theme_custom()+
-            theme(axis.text.x = element_text(angle = 90))+
-            facet_wrap(~variable)
-          return(p)
-        }
+    if (!is.null(datasetInput())) {
+      plot_data <- data()
+    }
+    if (input$resample_perct < 1 ) {
+      plot_data <- plot_data %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+    }
+    # draw the plot
+    if (input$facet == "On"){
+      
+      if (input$free_bird == "On"){
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
+          geom_line()+
+          theme_custom()+
+          theme(axis.text.x = element_text(angle = 90))+
+          facet_wrap(~variable, scales = "free_y", nrow = 3, ncol = 1)
+        return(p)
       }
+      if (input$free_bird == "Off"){
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
+          geom_line()+
+          theme_custom()+
+          theme(axis.text.x = element_text(angle = 90))+
+          facet_wrap(~variable, nrow = 3, ncol = 1)
+        return(p)
+      }
+    }
     # draw the plot
     if (input$facet == "Off"){
-      ############# work on microphone data ################
-      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+      
+      p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))
@@ -348,56 +348,24 @@ shinyServer(function(input, output, session) {
     }
     
   })
-  
-  #---------- Raw ECG2 -------------------#
-  output$ecg2_plot <- renderPlot({
-    # generate plot data based on input$activity from ui.R
-    if(is.null(datasetInput()))
-      (return(NULL))
-    if (!is.null(datasetInput()))
-      # draw the plot
-      if (input$facet == "On"){
-        ############# work on microphone data ################
-        if (input$free_bird == "On"){
-          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
-            geom_line()+
-            theme_custom()+
-            theme(axis.text.x = element_text(angle = 90))+
-            facet_wrap(~variable, scales = "free_y")
-          return(p)
-        }
-        if (input$free_bird == "Off"){
-          p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
-            geom_line()+
-            theme_custom()+
-            theme(axis.text.x = element_text(angle = 90))+
-            facet_wrap(~variable)
-          return(p)
-        }
-      }
-    # draw the plot
-    if (input$facet == "Off"){
-      ############# work on microphone data ################
-      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
-        geom_line()+
-        theme_custom()+
-        theme(axis.text.x = element_text(angle = 90))
-      return(p)
-    }
-    
-  })
-  
   #---------- Temp1 --------------------#
   output$temp1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if(is.null(datasetInput()))
-      (return(NULL))
-    if (!is.null(datasetInput()))
+    if (is.null(datasetInput())) {
+      return(NULL)
+    }
+    if (!is.null(data())) {
+      plot_data <- data()
+    }
+    if (input$resample_perct < 1 ) {
+      plot_data <- plot_data %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+    }
     # draw the plot
     if (input$facet == "On"){
       ############# work on microphone data ################
       if (input$free_bird == "On"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
@@ -405,7 +373,7 @@ shinyServer(function(input, output, session) {
         return(p)
       }
       if (input$free_bird == "Off"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
@@ -416,7 +384,7 @@ shinyServer(function(input, output, session) {
     # draw the plot
     if (input$facet == "Off"){
       ############# work on microphone data ################
-      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+      p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))
@@ -427,14 +395,21 @@ shinyServer(function(input, output, session) {
   #---------- Temp2 --------------------#
   output$temp2_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if(is.null(datasetInput()))
-      (return(NULL))
-    if (!is.null(datasetInput()))
+    if (is.null(datasetInput())) {
+      return(NULL)
+    }
+    if (!is.null(data())) {
+      plot_data <- data()
+    }
+    if (input$resample_perct < 1 ) {
+      plot_data <- plot_data %>%
+        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
+    }
     # draw the plot
     if (input$facet == "On"){
       ############# work on microphone data ################
       if (input$free_bird == "On"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
@@ -442,7 +417,7 @@ shinyServer(function(input, output, session) {
         return(p)
       }
       if (input$free_bird == "Off"){
-        p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
           geom_line()+
           theme_custom()+
           theme(axis.text.x = element_text(angle = 90))+
@@ -453,7 +428,7 @@ shinyServer(function(input, output, session) {
     # draw the plot
     if (input$facet == "Off"){
       ############# work on microphone data ################
-      p <- ggplot(data(), aes(x = time, y = value, color = variable, group = variable))+
+      p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
         geom_line()+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))
@@ -463,14 +438,19 @@ shinyServer(function(input, output, session) {
   
   #---------- Mic --------------------#
   output$mic_plot <- renderPlot({
-    if (!is.null(datasetInput()))
-    left <- data() %>%
-      select(Left, time)
-    right <- data() %>%
-      select(Right, time)
+    if (is.null(datasetInput())) {
+      return(NULL)
+    }
+    
+    if (!is.null(datasetInput())){
+      left <- data() %>%
+        select(Left, time)
+      right <- data() %>%
+        select(Right, time)
+    }
     
     jeff <- ggplot(left, aes(x = time, y = Left))+
-      geom_line()+
+      geom_line(data = dplyr::sample_frac(left, as.numeric(input$resample_perct), replace = FALSE) )+
       theme_custom()+
       theme(axis.text.x = element_text(angle = 90))+
       xlab("Time (ms)")+
@@ -478,26 +458,26 @@ shinyServer(function(input, output, session) {
       ggtitle("Left Channel")
     
     gold <- ggplot(right, aes(x = time, y = Right))+
-      geom_line()+
+      geom_line(data = dplyr::sample_frac(right, as.numeric(input$resample_perct), replace = FALSE) )+
       theme_custom()+
       theme(axis.text.x = element_text(angle = 90))+
       xlab("Time (ms)")+
       ylab("Amplitude")+
       ggtitle("Right Channel")
     
-    if(input$FFT == "On"){
+    if (input$FFT == "On") {
       left_fft <- computeFrequencyContent(left$Left, 44100)
-      right_fft <- computeFrequencyContent(right$Right, 44100) 
+      right_fft <- computeFrequencyContent(right$Right, 44100)
       
-      blum <- ggplot(left_fft, aes(x = p, y = freqArray/1000))+
-        geom_line()+
+      blum <- ggplot(left_fft, aes(y = p, x = freqArray/1000))+
+        geom_line(data = dplyr::sample_frac(left_fft, as.numeric(input$resample_perct), replace = FALSE) )+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))+
         xlab("Frequency (kHz)")+
         ylab("Magnitude")
       
-      m <- ggplot(right_fft, aes(x = p, y = freqArray/1000))+
-        geom_line()+
+      m <- ggplot(right_fft, aes(y = p, x = freqArray/1000))+
+        geom_line(data = dplyr::sample_frac(right_fft, as.numeric(input$resample_perct), replace = FALSE) )+
         theme_custom()+
         theme(axis.text.x = element_text(angle = 90))+
         xlab("Frequency (kHz)")+
