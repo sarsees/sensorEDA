@@ -124,7 +124,7 @@ getSpo2 <- function(data){
 #     R_cap = (I_red_ac*mean(ir_valleys_values))/(I_ir_ac*mean(red_valleys_values))
 #     spo2_cap = 98.283+26.871*R_cap-52.887*R_cap^2+10.0002*R_cap^3
    # R = (I_red_ac/I_red_dc)/(I_ir_ac/I_ir_dc)
-    spo2 = 100*(e_rd-R*e_ird)/(R*(e_iro-e_ird)-(e_ro-e_rd))
+#    spo2 = 100*(e_rd-R*e_ird)/(R*(e_iro-e_ird)-(e_ro-e_rd))
     spo2_median = 110 - 25*median(R)
     spo3_median = 112.7783-32.811*median(R)
     
@@ -135,7 +135,7 @@ getSpo2 <- function(data){
     
     #Save windowing values
     t_final[window] = t_current[length(t_current)]
-    spo2_final[window] = spo2
+#    spo2_final[window] = spo2
 #     spo2_2_final[window] = spo2_2
 #     spo2_cap_final[window] = spo2_cap
 #     spo2_3_final[window] = spo2_3
@@ -145,7 +145,7 @@ getSpo2 <- function(data){
     HR_final[window] = HR
   }
   
-  final = data.frame(cbind(t(t(spo2_final)),
+  final = data.frame(cbind(#t(t(spo2_final)),
 #                            t(t(spo2_2_final)),
 #                            t(t(spo2_cap_final)),
 #                            t(t(spo2_3_final)),
@@ -155,7 +155,7 @@ getSpo2 <- function(data){
                            t(t(HR_final)),
                            t(t(t_final))))
 #   colnames(final) <- c("spo2", "spo2_2", "spo2_3", "spo2_4", "spo2_cap", "spo2_median", "spo3_median","HR", "time")
-  colnames(final) <- c("spo2", "spo2_median", "spo3_median","HR", "time")
+  colnames(final) <- c("spo2_median", "spo3_median","HR", "time")
   final$time <- as.POSIXct(as.numeric(final$time), origin = "1970-01-01") 
   return(final)
 }
