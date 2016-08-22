@@ -53,20 +53,20 @@ shinyUI(fluidPage(theme = "yeti.css",
       #output$text1 in server.R matches textOutput("text1") in ui.R 
       #plotOutput("plot", width = "900px", height = "800px")
       tabsetPanel(id = "tabs", 
-                  tabPanel("IMU1", plotOutput("imu1_plot", height = 600)),
-                  tabPanel("IMU2", plotOutput("imu2_plot", height = 600)),
-                  tabPanel("PulseOx", plotOutput("pox_plot", height = 900)),
-                  tabPanel("ECG", plotOutput("ecg_plot", height = 800)),
-                  tabPanel("GSR", plotOutput("gsr_plot", height = 600)),
-                  tabPanel("Temp1", plotOutput("temp1_plot", height = 600)),
-                  tabPanel("Temp2", plotOutput("temp2_plot", height = 600)),
                   tabPanel("Microphone",
                            fluidPage(
                              plotOutput("mic_plot", height = 900),
                              hr(),
                              radioButtons("FFT", label = "Perform FFT? CAUTION: This may take a while", choices = list("On" = "On", "Off" = "Off"), selected = "Off")
                              )
-                          )
+                          ),
+                  tabPanel("IMU1", plotOutput("imu1_plot", height = 600)),
+                  tabPanel("IMU2", plotOutput("imu2_plot", height = 600)),
+                  tabPanel("PulseOx", plotOutput("pox_plot", height = 900)),
+                  tabPanel("GSR", plotOutput("gsr_plot", height = 600)),
+                  tabPanel("Temp1", plotOutput("temp1_plot", height = 600)),
+                  tabPanel("Temp2", plotOutput("temp2_plot", height = 600))
+                  
                   )
     )
   )

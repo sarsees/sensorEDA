@@ -11,7 +11,6 @@ shinyServer(function(input, output, session) {
   source("styles/ggplot_custom_theme.R")
   source("functions/multiplot.R")
   source("functions/getSpo2.R")
-  source('functions/ecg_processing.R')
   source('functions/computeFrequencyContent.R')
 
   #------------ Choose a directory to source data ------------#
@@ -32,11 +31,7 @@ shinyServer(function(input, output, session) {
       
       #Process data
       unmelted_data <- aggregateData(data_folder_path)
-      
-      ### process the ECG data
-      #ecg <- unmelted_data[['ECG']]
-      unmelted_data[['ECG']] <- NULL#ecg_processing(ecg)
-      
+     
       melted_data <- lapply(unmelted_data, function(x){
         melt(x, id.vars = "time")
       })
@@ -74,12 +69,16 @@ shinyServer(function(input, output, session) {
   
   #------------ Subset data by tab and time slider inputs ----#
   data <- reactive({
-    if (is.null(datasetInput()))
+    if (is.null(datasetInput())){
       return(NULL)
+    }
+    if (!is.null(datasetInput())){
       filteredData <- datasetInput()[[input$tabs]] %>%
         dplyr::filter(time >= input$timeSlider[1] ,
                time <= input$timeSlider[2] )
-    return(filteredData)
+        return(filteredData)
+    }
+    
   }) 
   
   ############  Plots  #################
@@ -130,7 +129,7 @@ shinyServer(function(input, output, session) {
   #---------- IMU2 --------------------#
   output$imu2_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if (is.null(datasetInput())) {
+    if (is.null(data())) {
       return(NULL)
     }
     if (!is.null(data())) {
@@ -175,10 +174,10 @@ shinyServer(function(input, output, session) {
   #---------- PulseOx --------------------#
   output$pox_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if (is.null(datasetInput())) {
+    if (is.null(data())) {
       return(NULL)
     }
-    if (!is.null(datasetInput())) {
+    if (!is.null(data())) {
     #Save the data into a variable
     pox_data = data() %>%
         dplyr::group_by(variable) %>%
@@ -262,7 +261,7 @@ shinyServer(function(input, output, session) {
   #---------- GSR --------------------#
   output$gsr_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if (is.null(datasetInput())) {
+    if (is.null(data())) {
       return(NULL)
     }
     if (!is.null(data())) {
@@ -304,54 +303,10 @@ shinyServer(function(input, output, session) {
     
   })
   
-  #---------- Differential ECG -----------# 
-  output$ecg_plot <- renderPlot({
-    if (is.null(datasetInput())) {
-      return(NULL)
-    }
-    
-    if (!is.null(datasetInput())) {
-      plot_data <- data()
-    }
-    if (input$resample_perct < 1 ) {
-      plot_data <- plot_data %>%
-        dplyr::sample_frac(as.numeric(input$resample_perct), replace = FALSE) 
-    }
-    # draw the plot
-    if (input$facet == "On"){
-      
-      if (input$free_bird == "On"){
-        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
-          geom_line()+
-          theme_custom()+
-          theme(axis.text.x = element_text(angle = 90))+
-          facet_wrap(~variable, scales = "free_y", nrow = 3, ncol = 1)
-        return(p)
-      }
-      if (input$free_bird == "Off"){
-        p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
-          geom_line()+
-          theme_custom()+
-          theme(axis.text.x = element_text(angle = 90))+
-          facet_wrap(~variable, nrow = 3, ncol = 1)
-        return(p)
-      }
-    }
-    # draw the plot
-    if (input$facet == "Off"){
-      
-      p <- ggplot(plot_data, aes(x = time, y = value, color = variable))+
-        geom_line()+
-        theme_custom()+
-        theme(axis.text.x = element_text(angle = 90))
-      return(p)
-    }
-    
-  })
   #---------- Temp1 --------------------#
   output$temp1_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if (is.null(datasetInput())) {
+    if (is.null(data())) {
       return(NULL)
     }
     if (!is.null(data())) {
@@ -395,7 +350,7 @@ shinyServer(function(input, output, session) {
   #---------- Temp2 --------------------#
   output$temp2_plot <- renderPlot({
     # generate plot data based on input$activity from ui.R
-    if (is.null(datasetInput())) {
+    if (is.null(data())) {
       return(NULL)
     }
     if (!is.null(data())) {
@@ -438,11 +393,11 @@ shinyServer(function(input, output, session) {
   
   #---------- Mic --------------------#
   output$mic_plot <- renderPlot({
-    if (is.null(datasetInput())) {
+    if (is.null(data())) {
       return(NULL)
     }
     
-    if (!is.null(datasetInput())){
+    if (!is.null(data())){
       left <- data() %>%
         select(Left, time)
       right <- data() %>%
