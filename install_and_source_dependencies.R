@@ -1,3 +1,4 @@
+options(repos = c(CRAN = "http://cran.rstudio.com"))
 InstalledPackage <- function(package) 
 {
   available <- suppressMessages(suppressWarnings(sapply(package, require, quietly = TRUE, character.only = TRUE, warn.conflicts = FALSE)))

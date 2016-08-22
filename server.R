@@ -34,8 +34,8 @@ shinyServer(function(input, output, session) {
       unmelted_data <- aggregateData(data_folder_path)
       
       ### process the ECG data
-      ecg <- unmelted_data[['ECG']]
-      unmelted_data[['ECG']] <- ecg_processing(ecg)
+      #ecg <- unmelted_data[['ECG']]
+      unmelted_data[['ECG']] <- NULL#ecg_processing(ecg)
       
       melted_data <- lapply(unmelted_data, function(x){
         melt(x, id.vars = "time")
