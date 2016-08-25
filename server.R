@@ -36,7 +36,7 @@ shinyServer(function(input, output, session) {
         melt(x, id.vars = "time")
       })
       
-      melted_data[["Microphone"]] <- unmelted_data[["Microphone"]]
+      #melted_data[["Microphone"]] <- unmelted_data[["Microphone"]]
       #Remove all csv and txt files
       rm_csv_command <- paste("rm ",data_folder_path,"/*.csv",sep="")
       rm_txt_command <- paste("rm ",data_folder_path,"/*.txt",sep="")
@@ -55,6 +55,8 @@ shinyServer(function(input, output, session) {
       return(NULL)
     }
     if (!is.null(datasetInput())) {
+      if (input$tabs == "Microphone") {
+        return(NULL)}
       inputData <- datasetInput()
       sliderInput("timeSlider",  
                   label = h4("Time"),
@@ -66,17 +68,39 @@ shinyServer(function(input, output, session) {
     
 
   })
+#   
+#   observe({
+#     if (!is.null(datasetInput())) {
+#     dat <-  datasetInput()[[input$tabs]]
+#     dat$time <- as.POSIXct(as.numeric(dat$time), origin = "1970-01-01")
+#     updateSliderInput(session, "timeSlider",
+#                       min = min(dat$time), max = max(dat$time),
+#                       value = c(dat$time[1], dat$time[1000])
+#                       ) 
+#     } 
+#   }) 
   
   #------------ Subset data by tab and time slider inputs ----#
   data <- reactive({
-    if (is.null(datasetInput())){
+    if (is.null(input$timeSlider)) {
       return(NULL)
     }
-    if (!is.null(datasetInput())){
-      filteredData <- datasetInput()[[input$tabs]] %>%
-        dplyr::filter(time >= input$timeSlider[1] ,
-               time <= input$timeSlider[2] )
-        return(filteredData)
+    if (!is.null(input$timeSlider)) {
+      if ( input$tabs != "Microphone") {
+        filteredData <- datasetInput()[[input$tabs]] %>%
+          dplyr::filter(time >= input$timeSlider[1],
+                        time <= input$timeSlider[2])
+        return(filteredData) 
+      }
+      if (input$tabs == "Microphone") {
+        data_folder_path <- paste(parseDirPath(roots = c(wd = getwd()), input$file))
+        wav_files <- list.files(list.dirs(data_folder_path), pattern = c("*.wav"), full.names =  TRUE)
+        names(wav_files) <- c("Mic_10", "Mic_20", "Mic_30", "Mic_40", "Mic_50", "Mic_60")
+        mics <- micImport(wav_files[[input$mic_subset]])
+        #mics <- lapply(wav_files, function(x) micImport(x))
+        #names(mic) <- c("Mic_10", "Mic_20", "Mic_30", "Mic_40", "Mic_50", "Mic_60")
+        return(mics)
+      } 
     }
     
   }) 
@@ -392,6 +416,21 @@ shinyServer(function(input, output, session) {
   })
   
   #---------- Mic --------------------#
+  
+#   output$mic_plot <- renderPlot({
+#     if (is.null(data())) {
+#             return(NULL)
+#           }
+#           
+#           if (!is.null(data())){
+#             left <- data() %>%
+#               select(Left, time)
+#             right <- data() %>%
+#               select(Right, time)
+#           }
+#     p <- plot_ly(dplyr::sample_frac(left,as.numeric(input$resample_perct), replace = FALSE), x = time, y = Left, name = "Head Mic")
+#     return(p)
+#   })
   output$mic_plot <- renderPlot({
     if (is.null(data())) {
       return(NULL)
