@@ -445,7 +445,7 @@ shinyServer(function(input, output, session) {
     }
     
     jeff <- ggplot(left, aes(x = time, y = Left))+
-      geom_line(data = dplyr::sample_frac(left, as.numeric(input$resample_perct), replace = FALSE) )+
+      geom_line(data = dplyr::sample_frac(left, as.numeric(input$resample_perct)/10, replace = FALSE) )+
       theme_custom()+
       theme(axis.text.x = element_text(angle = 90))+
       xlab("Time (ms)")+
@@ -453,7 +453,7 @@ shinyServer(function(input, output, session) {
       ggtitle("Left Channel")
     
     gold <- ggplot(right, aes(x = time, y = Right))+
-      geom_line(data = dplyr::sample_frac(right, as.numeric(input$resample_perct), replace = FALSE) )+
+      geom_line(data = dplyr::sample_frac(right, as.numeric(input$resample_perct)/10, replace = FALSE) )+
       theme_custom()+
       theme(axis.text.x = element_text(angle = 90))+
       xlab("Time (ms)")+
