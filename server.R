@@ -95,7 +95,8 @@ shinyServer(function(input, output, session) {
       if (input$tabs == "Microphone") {
         data_folder_path <- paste(parseDirPath(roots = c(wd = getwd()), input$file))
         wav_files <- list.files(list.dirs(data_folder_path), pattern = c("*.wav"), full.names =  TRUE)
-        names(wav_files) <- c("Mic_10", "Mic_20", "Mic_30", "Mic_40", "Mic_50", "Mic_60")
+        wav_names <- c("Mic_10", "Mic_20", "Mic_30", "Mic_40", "Mic_50", "Mic_60") 
+        names(wav_files) <- wav_names[1:length(wav_files)]
         mics <- micImport(wav_files[[input$mic_subset]])
         #mics <- lapply(wav_files, function(x) micImport(x))
         #names(mic) <- c("Mic_10", "Mic_20", "Mic_30", "Mic_40", "Mic_50", "Mic_60")
