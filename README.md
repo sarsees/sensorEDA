@@ -68,7 +68,7 @@ For OSX and Linux users, change the permissions on the *main.R* to have executab
 
  That script can become excecutable if it is not already (`chmod u+x /home/root/cronjobs/setup1time`). 
 
- After that is done, use ssh to to access the host computer from the yellowjacket system. This essential for the rsync script to work and should not require a password. Assuming that the correct hostComputer is added to `/etc/hosts`, the following command will allow you to check if the ssh keys works:
+ After that is done, use ssh to access the host computer from the yellowjacket system. This is essential for the rsync script to work and should not require a password. Assuming that the correct hostComputer is added to `/etc/hosts`, the following command will allow you to check if the ssh keys works:
  
  `ssh yellowjacket@hostComputer`
 
