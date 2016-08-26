@@ -14,17 +14,17 @@ shinyServer(function(input, output, session) {
   source('functions/computeFrequencyContent.R')
 
   #------------ Choose a directory to source data ------------#
-  shinyDirChoose(input,'file', session = session, roots = c(wd = '.'))
-  
+  shinyDirChoose(input,'file', session = session, roots = c(wd = '~/'))
+
   #------------ Read and preprocess all the data in dir input$file ------------#
   datasetInput <- reactive({
-    if (is.null(input$file)){
+    if (is.null(input$file)) {
       return(NULL)
     }
-    if (!is.null(input$file)){
+    if (!is.null(input$file)) {
       #Full folder path
-      data_folder_path = paste(parseDirPath(roots = c(wd = getwd()), input$file))
-      
+      data_folder_path = paste(parseDirPath(roots = c(wd = '~/'), input$file))
+
       #Run CSV Converter
       csv_command <- paste("python ", getwd(),'/utilities/unpack_driver.py ', data_folder_path, sep = "")
       system(csv_command)
@@ -68,17 +68,6 @@ shinyServer(function(input, output, session) {
     
 
   })
-#   
-#   observe({
-#     if (!is.null(datasetInput())) {
-#     dat <-  datasetInput()[[input$tabs]]
-#     dat$time <- as.POSIXct(as.numeric(dat$time), origin = "1970-01-01")
-#     updateSliderInput(session, "timeSlider",
-#                       min = min(dat$time), max = max(dat$time),
-#                       value = c(dat$time[1], dat$time[1000])
-#                       ) 
-#     } 
-#   }) 
   
   #------------ Subset data by tab and time slider inputs ----#
   data <- reactive({
@@ -93,7 +82,7 @@ shinyServer(function(input, output, session) {
         return(filteredData) 
       }
       if (input$tabs == "Microphone") {
-        data_folder_path <- paste(parseDirPath(roots = c(wd = getwd()), input$file))
+        data_folder_path <- paste(parseDirPath(roots = c(wd = '~/'), input$file))
         wav_files <- list.files(list.dirs(data_folder_path), pattern = c("*.wav"), full.names =  TRUE)
         wav_names <- c("Mic_10", "Mic_20", "Mic_30", "Mic_40", "Mic_50", "Mic_60") 
         names(wav_files) <- wav_names[1:length(wav_files)]
